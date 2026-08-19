@@ -1,5 +1,4 @@
 from typing import Any
-
 from pydantic import BaseModel, Field, model_validator
 
 
@@ -50,6 +49,14 @@ class Ghost(BaseModel):
                     "Using default value: 50."
                 )
                 speed = 50
+
+            elif speed > 100:
+                print(
+                    "[Warning] Invalid Ghost speed. "
+                    "Using Max Speed value: 100."
+                )
+                speed = 100
+
 
         except (ValueError, TypeError):
             print(

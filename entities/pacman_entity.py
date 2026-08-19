@@ -76,6 +76,8 @@ class Pacman(BaseModel):
 
     @model_validator(mode="after")
     def validate_game_logic(self) -> "Pacman":
+        if self.pacman_speed > 100:
+            self.pacman_speed = 100
         self.initial_lives = self.lives
         return self
 

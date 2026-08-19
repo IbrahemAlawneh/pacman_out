@@ -20,13 +20,10 @@ class Level(BaseModel):
     max_level: int = Field(default=10)
     max_time: int = Field(default=90)
     seed: int = Field(default=42)
-
-    # -------------------------
-    # Level size configuration
-    # -------------------------
+    
+    size_increment: int = Field(default=5)
     initial_width: int = Field(default=20)
     initial_height: int = Field(default=20)
-    size_increment: int = Field(default=5)
 
     # -------------------------
     # Maze
@@ -50,30 +47,6 @@ class Level(BaseModel):
             return {}
 
         safe_data: dict[str, Any] = {}
-
-        # -------------------------
-        # Level ID
-        # -------------------------
-        level_id = data.get("level_id", 1)
-
-        try:
-            level_id = int(level_id)
-
-            if level_id < 1:
-                print(
-                    "[Warning] Invalid level_id. "
-                    "Using default value: 1."
-                )
-                level_id = 1
-
-        except (ValueError, TypeError):
-            print(
-                "[Warning] Invalid level_id. "
-                "Using default value: 1."
-            )
-            level_id = 1
-
-        safe_data["level_id"] = level_id
 
         # -------------------------
         # Maximum level
@@ -155,54 +128,6 @@ class Level(BaseModel):
         safe_data["seed"] = seed
 
         # -------------------------
-        # Initial width
-        # -------------------------
-        initial_width = data.get("initial_width", 20)
-
-        try:
-            initial_width = int(initial_width)
-
-            if initial_width < 3:
-                print(
-                    "[Warning] Invalid initial_width. "
-                    "Using default value: 20."
-                )
-                initial_width = 20
-
-        except (ValueError, TypeError):
-            print(
-                "[Warning] Invalid initial_width. "
-                "Using default value: 20."
-            )
-            initial_width = 20
-
-        safe_data["initial_width"] = initial_width
-
-        # -------------------------
-        # Initial height
-        # -------------------------
-        initial_height = data.get("initial_height", 20)
-
-        try:
-            initial_height = int(initial_height)
-
-            if initial_height < 3:
-                print(
-                    "[Warning] Invalid initial_height. "
-                    "Using default value: 20."
-                )
-                initial_height = 20
-
-        except (ValueError, TypeError):
-            print(
-                "[Warning] Invalid initial_height. "
-                "Using default value: 20."
-            )
-            initial_height = 20
-
-        safe_data["initial_height"] = initial_height
-
-        # -------------------------
         # Size increment
         # -------------------------
         size_increment = data.get("size_increment", 5)
@@ -242,17 +167,9 @@ class Level(BaseModel):
                 "Using max_level as current level."
             )
             self.level_id = self.max_level
-
-        # Calculate current level dimensions.
-        self.width = (
-            self.initial_width
-            + (self.level_id - 1) * self.size_increment
-        )
-
-        self.height = (
-            self.initial_height
-            + (self.level_id - 1) * self.size_increment
-        )
+        
+        self.initial_width = self.width
+        self.initial_height = self.height
 
         # Create the maze for the current level.
         self.maze = MazeGenerator(

@@ -127,6 +127,10 @@ class GameEntities(BaseModel):
         }
 
         self.level = Level(**level_config)
+        
+        for g in self.ghosts:
+            if g.speed > self.pacman.pacman_speed:
+                g.speed = self.pacman.pacman_speed
 
         return self
 
