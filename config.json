@@ -1,0 +1,18 @@
+{
+    # General game and highscore configuration
+    "highscore_filename": "highscores.json",
+    "seed": 42,
+    "level_max_time": 90,
+    "max_level": 10,
+
+    # Pac-Man / player configuration
+    "lives": 3,
+    "points_per_pacgum": 10,
+    "points_per_super_pacgum": 50,
+    "points_per_ghost": 200,
+    "pacman_speed": 50,
+
+    # Ghost configuration
+    "ghost_speed": 50,
+    "ghosts_mode": 1
+}
