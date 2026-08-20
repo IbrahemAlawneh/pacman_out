@@ -8,7 +8,7 @@ from entities import GameEntities
 def main() -> None:
     """Program entry point."""
     
-    #make surface for all screen
+    # make surface for all screen
     pygame.init()
     surface = pygame.display.set_mode((800,800))
     pygame.display.set_caption("Pac-Man")
@@ -46,7 +46,7 @@ def main() -> None:
     print("\n==========================\n")
     print(game.level.maze.maze)
     
-    pygame.init()
 
 if __name__ == "__main__":
     main()
+    
