@@ -7,7 +7,7 @@
 
     # Pac-Man / player configuration
     "lives": 3,
-    "points_pes_pacgum": ,
+    "points_pes_pacgum": 20,
     "points_per_super_pacgum": 50,
     "points_per_ghost": 200,
     "pacman_speed": 50,

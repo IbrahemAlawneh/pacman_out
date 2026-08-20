@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 dependencies = [
     "pydantic (>=2.13.4,<3.0.0)",
     "pygame (>=2.6.1,<3.0.0)",
-    "mazegenerator @ file:///D:/newpacman/libs/mazegenerator-2.1.0-py3-none-any.whl"
+    "mazegenerator @ file:///D:/pacman_out/libs/mazegenerator-2.1.0-py3-none-any.whl"
 ]
 
 

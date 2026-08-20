@@ -1,10 +1,17 @@
 import sys
+import pygame
+from configuration_files import load_config
+from entities import GameEntities
 
-from configuration_files.config_validation import GameEntities, load_config
 
 
 def main() -> None:
     """Program entry point."""
+    
+    #make surface for all screen
+    pygame.init()
+    surface = pygame.display.set_mode((800,800))
+    pygame.display.set_caption("Pac-Man")
 
     # The program must receive exactly one argument:
     # the configuration file.
@@ -38,7 +45,8 @@ def main() -> None:
     game.level.next_level()
     print("\n==========================\n")
     print(game.level.maze.maze)
-
+    
+    pygame.init()
 
 if __name__ == "__main__":
     main()
