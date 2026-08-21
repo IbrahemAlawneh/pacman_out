@@ -1,7 +1,6 @@
 from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
-
 from mazegenerator import MazeGenerator
 
 
@@ -151,6 +150,13 @@ class Level(BaseModel):
 
         safe_data["size_increment"] = size_increment
 
+        try:
+            safe_data["width"] = int(data.get("width", 20))
+            safe_data["height"] = int(data.get("height", 20))
+        except (ValueError, TypeError):
+            safe_data["width"] = 20
+            safe_data["height"] = 20
+
         return safe_data
 
     @model_validator(mode="after")
@@ -174,7 +180,8 @@ class Level(BaseModel):
         # Create the maze for the current level.
         self.maze = MazeGenerator(
             size=(self.width, self.height),
-            seed=self.seed
+            seed=self.seed,
+            perfect=True
         )
 
         return self
@@ -214,3 +221,8 @@ class Level(BaseModel):
         )
 
         return True
+
+    @property
+    def grid(self) -> list[list[int]]:
+        """Return the 2D array representation of the maze."""
+        return self.maze.maze if self.maze else []

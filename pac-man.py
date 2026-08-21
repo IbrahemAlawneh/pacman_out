@@ -2,7 +2,7 @@ import sys
 import pygame
 from configuration_files import load_config
 from entities import GameEntities
-from screens import MainScreen
+from screens import MainScreen, GameScreen
 
 
 def main() -> None:
@@ -46,6 +46,13 @@ def main() -> None:
             "The file must have a .json extension."
         )
         return
+
+    config = load_config(config_filename)
+    game = GameEntities(**config)
+
+    main_screen = MainScreen(surface)
+    game_screen = GameScreen(surface)
+    current_state = "menu"
     
     running = True
     while running:
@@ -56,35 +63,21 @@ def main() -> None:
                 running = False
                 continue
 
-            action = main_screen.handle_event(event)
-            
-            #هذول للتست ورح ينشالن
-            if action == "quit":
-                running = False
+            if current_state == "menu":
+                action = main_screen.handle_event(event)
+                if action == "quit":
+                    running = False
+                elif action == "play":
+                    current_state = "playing"  # تغيير الحالة لبدء اللعبة
 
-            elif action == "play":
-                print("[Info] Play selected.")
+        # 4. التحكم برسم الشاشة المناسبة
+        if current_state == "menu":
+            main_screen.draw()
+        elif current_state == "playing":
+            game_screen.draw_grid(game.level)  # رسم شبكة المتاهة
 
-            elif action == "highscores":
-                print("[Info] High Scores selected.")
-
-            elif action == "settings":
-                print("[Info] Settings selected.")
-
-        main_screen.draw()
         pygame.display.flip()
         clock.tick(60)
-
-    pygame.quit()
-    
-    
-    
-    
-    # Load and validate the configuration.
-    config = load_config(config_filename)
-
-    # هاي بدها تعديل مكان استدعائها لبعدين
-    game = GameEntities(**config)
     
     
 

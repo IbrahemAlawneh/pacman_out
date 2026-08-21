@@ -24,6 +24,9 @@ class GameEntities(BaseModel):
     level_max_time: int = Field(default=90)
     max_level: int = Field(default=10)
 
+    width: int = Field(default=20)
+    height: int = Field(default=20)
+
     # =========================================================
     # Runtime entities
     # =========================================================
@@ -118,6 +121,8 @@ class GameEntities(BaseModel):
             "seed": self.seed,
             "level_max_time": self.level_max_time,
             "max_level": self.max_level,
+            "width": self.width,
+            "height": self.height,
         }
 
         self.level = Level(**level_config)

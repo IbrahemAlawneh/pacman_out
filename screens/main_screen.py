@@ -31,11 +31,16 @@ class MainScreen:
     # ---------------------------------------------------------
     # Colors
     # ---------------------------------------------------------
-    TEXT_COLOR = (255, 255, 255)
-    BUTTON_COLOR = (38, 15, 75)
-    BUTTON_HOVER_COLOR = (90, 35, 145)
-    BUTTON_BORDER_COLOR = (255, 196, 0)
-    BUTTON_HOVER_BORDER_COLOR = (255, 230, 80)
+    TEXT_COLOR = (245, 245, 255)
+    TEXT_SHADOW_COLOR = (10, 5, 25)
+
+    BUTTON_COLOR = (28, 18, 48, 180)
+    BUTTON_HOVER_COLOR = (255, 60, 170)
+
+    BUTTON_BORDER_COLOR = (120, 90, 255)
+    BUTTON_HOVER_BORDER_COLOR = (0, 255, 220)
+
+    BUTTON_GLOW_COLOR = (255, 60, 170, 60)
 
     # ---------------------------------------------------------
     # Constructor
@@ -233,22 +238,29 @@ class MainScreen:
                 self.screen.fill((0, 0, 0))
 
     def _draw_buttons(self) -> None:
-        mouse_position = pygame.mouse.get_pos()
+            mouse_position = pygame.mouse.get_pos()
+            cut = 12  # تحديد حجم القطع هنا
 
-        for index, button in enumerate(self.buttons):
-            rect: pygame.Rect = button["rect"]
-            is_hovered = rect.collidepoint(mouse_position)
-            is_selected = index == self.selected_button_index
+            for index, button in enumerate(self.buttons):
+                rect: pygame.Rect = button["rect"]
+                is_hovered = rect.collidepoint(mouse_position)
+                is_selected = index == self.selected_button_index
 
-            button_color = self.BUTTON_HOVER_COLOR if is_hovered or is_selected else self.BUTTON_COLOR
-            border_color = self.BUTTON_HOVER_BORDER_COLOR if is_hovered or is_selected else self.BUTTON_BORDER_COLOR
+                button_color = self.BUTTON_HOVER_COLOR if is_hovered or is_selected else self.BUTTON_COLOR
+                border_color = self.BUTTON_HOVER_BORDER_COLOR if is_hovered or is_selected else self.BUTTON_BORDER_COLOR
 
-            pygame.draw.rect(self.screen, button_color, rect, border_radius=14)
-            pygame.draw.rect(self.screen, border_color, rect, width=3, border_radius=14)
+                points = [
+                    (rect.left + cut, rect.top), (rect.right - cut, rect.top),
+                    (rect.right, rect.top + cut), (rect.right, rect.bottom - cut),
+                    (rect.right - cut, rect.bottom), (rect.left + cut, rect.bottom),
+                    (rect.left, rect.bottom - cut), (rect.left, rect.top + cut),
+                ]
+                pygame.draw.polygon(self.screen, button_color, points)
+                pygame.draw.polygon(self.screen, border_color, points, width=2)
 
-            text_surface = self.button_font.render(button["text"], True, self.TEXT_COLOR)
-            text_rect = text_surface.get_rect(center=rect.center)
-            self.screen.blit(text_surface, text_rect)
+                text_surface = self.button_font.render(button["text"], True, self.TEXT_COLOR)
+                text_rect = text_surface.get_rect(center=rect.center)
+                self.screen.blit(text_surface, text_rect)
 
     # =========================================================
     # Input & Navigation (No Changes needed here)

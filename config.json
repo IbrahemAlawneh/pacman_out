@@ -1,9 +1,12 @@
 {
+    
     # General game and highscore configuration
     "highscore_filename": "highscores.json",
     "seed": 42,
     "level_max_time": 90,
     "max_level": 10,
+    "width": 40,
+    "height": 25,
 
     # Pac-Man / player configuration
     "lives": 3,

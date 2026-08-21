@@ -4,6 +4,8 @@ MAIN = pac-man.py
 CONFIG = config.json
 OUTPUT = highscores.json
 
+all: run
+
 install:
 	$(POETRY) install --with dev
 
