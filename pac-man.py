@@ -2,20 +2,17 @@ import sys
 import pygame
 from configuration_files import load_config
 from entities import GameEntities
-from screens import MainScreen, GameScreen
+from screens import ScreenManager
 
 
 def main() -> None:
     """Program entry point."""
     
-    # make surface for all screen
+    # make surface for all screens
     pygame.init()
     pygame.mixer.init()
     surface = pygame.display.set_mode((1200,800))
     pygame.display.set_caption("Pac-Man")
-    
-    main_screen = MainScreen(surface)
-    clock = pygame.time.Clock()
     
     try:
         pygame.mixer.music.load("assets/sounds/background_music.ogg")
@@ -27,9 +24,6 @@ def main() -> None:
     except pygame.error as e:
         print(f"[Warning] Could not load background music: {e}")
     
-    
-    # The program must receive exactly one argument:
-    # the configuration file.
     if len(sys.argv) != 2:
         print(
             "[Warning] Invalid number of arguments. "
@@ -46,38 +40,12 @@ def main() -> None:
             "The file must have a .json extension."
         )
         return
-
-    config = load_config(config_filename)
-    game = GameEntities(**config)
-
-    main_screen = MainScreen(surface)
-    game_screen = GameScreen(surface)
-    current_state = "menu"
     
-    running = True
-    while running:
-        
-        for event in pygame.event.get():
-
-            if event.type == pygame.QUIT:
-                running = False
-                continue
-
-            if current_state == "menu":
-                action = main_screen.handle_event(event)
-                if action == "quit":
-                    running = False
-                elif action == "play":
-                    current_state = "playing"  # تغيير الحالة لبدء اللعبة
-
-        # 4. التحكم برسم الشاشة المناسبة
-        if current_state == "menu":
-            main_screen.draw()
-        elif current_state == "playing":
-            game_screen.draw_grid(game.level)  # رسم شبكة المتاهة
-
-        pygame.display.flip()
-        clock.tick(60)
+    config = load_config(config_filename)
+    
+    mang = ScreenManager(surface, config)
+    
+    mang.run()
     
     
 

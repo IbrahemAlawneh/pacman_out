@@ -180,8 +180,7 @@ class Level(BaseModel):
         # Create the maze for the current level.
         self.maze = MazeGenerator(
             size=(self.width, self.height),
-            seed=self.seed,
-            perfect=True
+            seed=self.seed
         )
 
         return self

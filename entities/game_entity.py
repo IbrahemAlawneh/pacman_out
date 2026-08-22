@@ -1,6 +1,8 @@
 from typing import Any
 from pydantic import BaseModel, Field, model_validator
-from . import Pacman, Ghost, Level
+from .ghost_entity import Ghost
+from .level_entity import Level
+from .pacman_entity import Pacman
 
 
 class GameEntities(BaseModel):
