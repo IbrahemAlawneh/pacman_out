@@ -7,10 +7,11 @@ authors = [
 ]
 
 requires-python = ">=3.10"
+
 dependencies = [
     "pydantic (>=2.13.4,<3.0.0)",
-    "pygame (>=2.6.1,<3.0.0)",
-    "mazegenerator @ file:./libs/mazegenerator-2.1.0-py3-none-any.whl"
+    "mazegenerator @ file:./libs/mazegenerator-2.1.0-py3-none-any.whl",
+    "pygame-ce (>=2.5.8,<3.0.0)",
 ]
 
 [tool.poetry]

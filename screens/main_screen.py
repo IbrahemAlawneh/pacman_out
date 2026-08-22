@@ -90,9 +90,10 @@ class MainScreen:
 
         self.buttons = [
             {"text": "PLAY", "action": "play", "rect": pygame.Rect(0, self.BUTTON_START_Y, self.BUTTON_WIDTH, self.BUTTON_HEIGHT)},
-            {"text": "HIGH SCORES", "action": "highscores", "rect": pygame.Rect(0, self.BUTTON_START_Y + (self.BUTTON_HEIGHT + self.BUTTON_GAP), self.BUTTON_WIDTH, self.BUTTON_HEIGHT)},
+            {"text": "HIGH SCORES", "action": "highscores", "rect": pygame.Rect(0, self.BUTTON_START_Y + 1 * (self.BUTTON_HEIGHT + self.BUTTON_GAP), self.BUTTON_WIDTH, self.BUTTON_HEIGHT)},
             {"text": "SETTINGS", "action": "settings", "rect": pygame.Rect(0, self.BUTTON_START_Y + 2 * (self.BUTTON_HEIGHT + self.BUTTON_GAP), self.BUTTON_WIDTH, self.BUTTON_HEIGHT)},
-            {"text": "QUIT", "action": "quit", "rect": pygame.Rect(0, self.BUTTON_START_Y + 3 * (self.BUTTON_HEIGHT + self.BUTTON_GAP), self.BUTTON_WIDTH, self.BUTTON_HEIGHT)},
+            {"text": "INSTRUCTIONS", "action": "instructions", "rect": pygame.Rect(0, self.BUTTON_START_Y + 3 * (self.BUTTON_HEIGHT + self.BUTTON_GAP), self.BUTTON_WIDTH, self.BUTTON_HEIGHT)},
+            {"text": "QUIT", "action": "quit", "rect": pygame.Rect(0, self.BUTTON_START_Y + 4 * (self.BUTTON_HEIGHT + self.BUTTON_GAP), self.BUTTON_WIDTH, self.BUTTON_HEIGHT)},
         ]
 
         for button in self.buttons:

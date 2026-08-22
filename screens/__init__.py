@@ -6,4 +6,7 @@ from .instructions_screen import InstructionsScreen
 from .screen_manager import ScreenManager
 from .setting_screen import SettingScreen
 
-__all__ = ["MainScreen", "GameScreen"]
+__all__ = [
+    "MainScreen", "GameScreen", "SettingScreen",
+    "ScreenManager", "InstructionsScreen", "HighScoreScreen"
+]
