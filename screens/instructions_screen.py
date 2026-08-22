@@ -21,22 +21,34 @@ class InstructionsScreen:
         except (FileNotFoundError, pygame.error):
             self.bg = None
 
-        self.font_title = pygame.font.Font(None, 60)
-        self.font_text = pygame.font.Font(None, 36)
-        self.font_footer = pygame.font.Font(None, 40)
+        # Clean, readable fonts with no external font-file dependency.
+        font_name = pygame.font.match_font("segoeui,dejavusans,arial")
+        self.font_title = pygame.font.Font(font_name, 58)
+        self.font_text = pygame.font.Font(font_name, 27)
+        self.font_key = pygame.font.Font(font_name, 25)
+        self.font_footer = pygame.font.Font(font_name, 22)
 
-        self.TEXT_COLOR = (255, 255, 255)
-        self.HEADER_COLOR = (246, 135, 20)
-        self.NEON_PINK = (255, 60, 170)
-        self.FOOTER_COLOR = (0, 255, 220)
-        self.BOX_BG = (28, 18, 48, 180)
+        # Modern dark UI palette.
+        self.TEXT_COLOR = (225, 233, 250)
+        self.GOLD_COLOR = (255, 207, 92)
+        self.HEADER_COLOR = (116, 224, 255)
+        self.NEON_PINK = (224, 116, 255)
+        self.NEON_CYAN = (91, 224, 255)
+        self.FOOTER_COLOR = (151, 169, 211)
+        self.GLASS_BG = (19, 27, 57, 225)
 
         self.instructions = [
-            "1. Eat all Pac-Gums to complete the level.",
-            "2. Avoid Ghosts, or you lose a life.",
-            "3. Eat Super Pac-Gums to make Ghosts edible.",
-            "4. Ghosts in Hard Mode will chase you!",
-            "5. Survive, get the highest score, and win."
+            ("GAME RULES", self.HEADER_COLOR, "", None),
+            ("Pac-Gum = 10 pts  |  Super Pac-Gum = 50 pts", self.TEXT_COLOR, "", None),
+            ("Eat an edible Ghost to score 200 pts", self.TEXT_COLOR, "", None),
+            ("Avoid active Ghosts to save your lives", self.TEXT_COLOR, "", None),
+            ("", self.TEXT_COLOR, "", None),
+            ("CHEAT MODE  /  SETTINGS", self.NEON_PINK, "", None),
+            ("Power: Lives are safe from ghosts", self.TEXT_COLOR, "ARMOR", self.GOLD_COLOR),
+            ("Next: Instant win for the level", self.TEXT_COLOR, "SKIP", self.GOLD_COLOR),
+            ("Freeze: Ghosts stop moving", self.TEXT_COLOR, "ICE", self.GOLD_COLOR),
+            ("Extra: Add extra lives to player", self.TEXT_COLOR, "1UP", self.GOLD_COLOR),
+            ("Speed: Pac-Man moves much faster", self.TEXT_COLOR, "DASH", self.GOLD_COLOR),
         ]
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
@@ -45,134 +57,208 @@ class InstructionsScreen:
             return "back_to_menu"
         return None
 
-    def _draw_arrow(self, x: int, y: int, direction: str) -> None:
-        """Draw a directional arrow."""
-        color = self.TEXT_COLOR
-        width = 3
+    def _draw_modern_key(self, x: int, y: int, letter: str, arrow: str) -> None:
+        """Draw a modern glass keyboard key with shadow and accent lighting."""
+        rect = pygame.Rect(x, y, 65, 65)
+        accent = self.NEON_CYAN if letter in ("W", "A", "S", "D") else self.NEON_PINK
 
-        if direction == "UP":
-            pygame.draw.line(
-                self.surface, color, (x, y + 10), (x, y - 10), width
-            )      # الخط العمودي
-            pygame.draw.line(
-                self.surface, color, (x, y - 10), (x - 8, y - 2), width
-            )   # رأس السهم الأيسر
-            pygame.draw.line(
-                self.surface, color, (x, y - 10), (x + 8, y - 2), width
-            )   # رأس السهم الأيمن
+        # Soft shadow creates depth without changing the control layout.
+        shadow = pygame.Surface((rect.width + 18, rect.height + 18), pygame.SRCALPHA)
+        pygame.draw.rect(
+            shadow,
+            (0, 0, 0, 105),
+            shadow.get_rect(),
+            border_radius=16,
+        )
+        self.surface.blit(shadow, (rect.x - 9, rect.y + 6))
 
-        elif direction == "DOWN":
-            pygame.draw.line(
-                self.surface, color, (x, y - 10), (x, y + 10), width
-            )
-            pygame.draw.line(
-                self.surface, color, (x, y + 10), (x - 8, y + 2), width
-            )
-            pygame.draw.line(
-                self.surface, color, (x, y + 10), (x + 8, y + 2), width
-            )
+        pygame.draw.rect(self.surface, self.GLASS_BG, rect, border_radius=15)
+        pygame.draw.rect(self.surface, (67, 84, 137), rect, width=1, border_radius=15)
+        pygame.draw.rect(self.surface, accent, rect, width=2, border_radius=15)
 
-        elif direction == "LEFT":
-            pygame.draw.line(
-                self.surface, color, (x + 10, y), (x - 10, y), width
-            )
-            pygame.draw.line(
-                self.surface, color, (x - 10, y), (x - 2, y - 8), width
-            )
-            pygame.draw.line(
-                self.surface, color, (x - 10, y), (x - 2, y + 8), width
-            )
+        # Thin highlight at the top gives the key a polished glass appearance.
+        pygame.draw.line(
+            self.surface,
+            (220, 245, 255),
+            (rect.x + 15, rect.y + 6),
+            (rect.right - 15, rect.y + 6),
+            1,
+        )
 
-        elif direction == "RIGHT":
-            pygame.draw.line(
-                self.surface, color, (x - 10, y), (x + 10, y), width
-            )
-            pygame.draw.line(
-                self.surface, color, (x + 10, y), (x + 2, y - 8), width
-            )
-            pygame.draw.line(
-                self.surface, color, (x + 10, y), (x + 2, y + 8), width
-            )
+        letter_surf = self.font_key.render(letter, True, self.TEXT_COLOR)
+        arrow_surf = self.font_key.render(arrow, True, accent)
+
+        self.surface.blit(
+            letter_surf,
+            letter_surf.get_rect(center=(rect.centerx, rect.y + 25)),
+        )
+        self.surface.blit(
+            arrow_surf,
+            arrow_surf.get_rect(center=(rect.centerx, rect.y + 49)),
+        )
 
     def _draw_keys_panel(self) -> None:
         """Draw the WASD/Arrow keys panel."""
+        panel_rect = pygame.Rect(750, 200, 350, 320)
 
-        # 1. Draw the transparent panel frame
-        panel_rect = pygame.Rect(750, 200, 350, 300)
+        # Panel shadow.
+        shadow = pygame.Surface(
+            (panel_rect.width + 24, panel_rect.height + 24), pygame.SRCALPHA
+        )
+        pygame.draw.rect(
+            shadow,
+            (0, 0, 0, 100),
+            shadow.get_rect(),
+            border_radius=23,
+        )
+        self.surface.blit(shadow, (panel_rect.x - 12, panel_rect.y + 8))
+
+        # Glass panel and subtle border.
         panel_surface = pygame.Surface(
             (panel_rect.width, panel_rect.height), pygame.SRCALPHA
         )
         pygame.draw.rect(
-            panel_surface, self.BOX_BG, panel_surface.get_rect(),
-            border_radius=15
+            panel_surface,
+            self.GLASS_BG,
+            panel_surface.get_rect(),
+            border_radius=20,
         )
         self.surface.blit(panel_surface, panel_rect.topleft)
         pygame.draw.rect(
-            self.surface, self.NEON_PINK, panel_rect, width=3,
-            border_radius=15
+            self.surface,
+            (67, 84, 137),
+            panel_rect,
+            width=1,
+            border_radius=20,
+        )
+        pygame.draw.rect(
+            self.surface,
+            self.NEON_PINK,
+            panel_rect,
+            width=2,
+            border_radius=20,
         )
 
-        # 2. Panel title
+        # Panel title and decorative divider.
         ctrl_title = self.font_text.render(
-            "MOVEMENT", True, self.HEADER_COLOR
+            "MOVEMENT", True, self.NEON_CYAN
         )
         self.surface.blit(
             ctrl_title,
             (
                 panel_rect.centerx - ctrl_title.get_width() // 2,
-                panel_rect.y + 20)
-            )
+                panel_rect.y + 24,
+            ),
+        )
+        pygame.draw.line(
+            self.surface,
+            (60, 76, 125),
+            (panel_rect.x + 30, panel_rect.y + 72),
+            (panel_rect.right - 30, panel_rect.y + 72),
+            1,
+        )
 
-        # 3. Define the positions of the four keys (Center X, Center Y)
+        # Preserve the original key positions and dimensions.
         cx, cy = panel_rect.centerx, panel_rect.centery + 15
         keys = [
-            (cx - 30, cy - 80, "UP"),
-            (cx - 30, cy - 10, "DOWN"),
-            (cx - 100, cy - 10, "LEFT"),
-            (cx + 40, cy - 10, "RIGHT")
+            (cx - 32, cy - 80, "W", "^"),
+            (cx - 32, cy - 5, "S", "v"),
+            (cx - 107, cy - 5, "A", "<"),
+            (cx + 43, cy - 5, "D", ">"),
         ]
 
-        # 4. Draw the key boxes and arrows inside them
-        for x, y, direction in keys:
-            key_rect = pygame.Rect(x, y, 60, 60)
-            # key background
-            pygame.draw.rect(
-                self.surface, (50, 40, 70), key_rect, border_radius=8
-            )
-            # key border
-            pygame.draw.rect(
-                self.surface, self.TEXT_COLOR, key_rect, width=2,
-                border_radius=8
-            )
-            # Draw the arrow in the center of the key
-            self._draw_arrow(x + 30, y + 30, direction)
+        for x, y, letter, arrow in keys:
+            self._draw_modern_key(x, y, letter, arrow)
 
-        wasd_text = self.font_text.render(
-            "OR USE W A S D", True, (200, 200, 220)
+        footer_text = self.font_key.render(
+            "USE ARROWS OR LETTERS", True, self.FOOTER_COLOR
         )
         self.surface.blit(
-            wasd_text, (panel_rect.centerx - wasd_text.get_width() // 2,
-                        panel_rect.bottom - 45)
-                    )
+            footer_text,
+            (
+                panel_rect.centerx - footer_text.get_width() // 2,
+                panel_rect.bottom - 40,
+            ),
+        )
 
     def draw(self) -> None:
-        """Render the background, title, rules, and controls panel."""
-
+        """Render screen elements."""
         if self.bg:
             self.surface.blit(self.bg, (0, 0))
+            # Dark overlay makes text readable on any background image.
+            overlay = pygame.Surface(self.surface.get_size(), pygame.SRCALPHA)
+            overlay.fill((7, 10, 27, 100))
+            self.surface.blit(overlay, (0, 0))
         else:
-            self.surface.fill((20, 10, 40))
+            self.surface.fill((9, 13, 30))
 
+            # Subtle modern background decorations.
+            overlay = pygame.Surface(self.surface.get_size(), pygame.SRCALPHA)
+            pygame.draw.circle(overlay, (*self.NEON_PINK, 22), (1130, 80), 250)
+            pygame.draw.circle(overlay, (*self.NEON_CYAN, 16), (40, 720), 220)
+            self.surface.blit(overlay, (0, 0))
+
+        # Header.
         title_surf = self.font_title.render(
-            "HOW TO PLAY", True, self.HEADER_COLOR
+            "HOW TO PLAY", True, self.TEXT_COLOR
         )
-        self.surface.blit(title_surf, (80, 80))
+        title_x = 80
+        self.surface.blit(title_surf, (title_x, 65))
 
-        start_y = 200
-        for line in self.instructions:
-            text_surf = self.font_text.render(line, True, self.TEXT_COLOR)
-            self.surface.blit(text_surf, (80, start_y))
-            start_y += 60
+        pygame.draw.line(
+            self.surface,
+            self.NEON_CYAN,
+            (title_x, 143),
+            (title_x + 100, 143),
+            3,
+        )
+        pygame.draw.line(
+            self.surface,
+            self.NEON_PINK,
+            (title_x + 112, 143),
+            (title_x + 145, 143),
+            3,
+        )
+
+        start_y = 178
+        for main_text, main_color, highlight_text, highlight_color in self.instructions:
+            x_offset = 80
+
+            # Section headings receive a larger visual separation.
+            is_heading = main_color in (self.HEADER_COLOR, self.NEON_PINK)
+            if is_heading:
+                start_y += 7
+
+            if highlight_text:
+                # Highlight tags are rendered first to preserve the original
+                # positioning logic while making the tag look like a badge.
+                tag_text = f"[{highlight_text}]"
+                high_surf = self.font_text.render(tag_text, True, highlight_color)
+                tag_rect = pygame.Rect(x_offset, start_y + 3, high_surf.get_width() + 16, 31)
+                pygame.draw.rect(
+                    self.surface,
+                    (57, 46, 76),
+                    tag_rect,
+                    border_radius=8,
+                )
+                pygame.draw.rect(
+                    self.surface,
+                    highlight_color,
+                    tag_rect,
+                    width=1,
+                    border_radius=8,
+                )
+                self.surface.blit(
+                    high_surf,
+                    (tag_rect.x + 8, tag_rect.y - 1),
+                )
+                x_offset += tag_rect.width + 12
+
+            if main_text:
+                text_surf = self.font_text.render(main_text, True, main_color)
+                self.surface.blit(text_surf, (x_offset, start_y))
+
+            start_y += 39 if not is_heading else 45
 
         self._draw_keys_panel()
 
@@ -182,5 +268,7 @@ class InstructionsScreen:
         self.surface.blit(
             esc_surf,
             (
-                self.surface.get_width() // 2 - esc_surf.get_width() // 2, 700
-            ))
+                self.surface.get_width() // 2 - esc_surf.get_width() // 2,
+                self.surface.get_height() - 50,
+            ),
+        )
