@@ -3,9 +3,12 @@ from pydantic import BaseModel, Field, model_validator
 
 
 class Ghost(BaseModel):
-    # Ghost configuration
+
     speed: int = Field(default=50)
     mode: int = Field(default=0)
+
+    grid_x: int = Field(default=1)
+    grid_y: int = Field(default=1)
 
     @model_validator(mode="before")
     @classmethod
@@ -16,7 +19,6 @@ class Ghost(BaseModel):
             0 = Random
             1 = Hard
         """
-
         if not isinstance(data, dict):
             print(
                 "[Warning] Ghost configuration is invalid. "
@@ -26,9 +28,6 @@ class Ghost(BaseModel):
 
         safe_data: dict[str, Any] = {}
 
-        # -------------------------
-        # Ghost speed
-        # -------------------------
         speed = data.get("ghost_speed", data.get("speed", 50))
 
         if speed is None or (
@@ -42,7 +41,6 @@ class Ghost(BaseModel):
 
         try:
             speed = int(speed)
-
             if speed <= 0:
                 print(
                     "[Warning] Invalid Ghost speed. "
@@ -57,7 +55,6 @@ class Ghost(BaseModel):
                 )
                 speed = 100
 
-
         except (ValueError, TypeError):
             print(
                 "[Warning] Invalid Ghost speed. "
@@ -66,10 +63,6 @@ class Ghost(BaseModel):
             speed = 50
 
         safe_data["speed"] = speed
-
-        # -------------------------
-        # Ghost mode
-        # -------------------------
         mode = data.get("mode", 0)
 
         if mode is None or (
@@ -109,7 +102,6 @@ class Ghost(BaseModel):
         0 = Random
         1 = Hard
         """
-
         if mode not in (0, 1):
             print(
                 "[Warning] Invalid Ghost mode. "
@@ -126,3 +118,20 @@ class Ghost(BaseModel):
     def is_random(self) -> bool:
         """Return True if the Ghost is in Random mode."""
         return self.mode == 0
+
+    def get_open_walls(
+            self, grid: list[list[int]], check_x: int, check_y: int
+        ) -> dict[str, bool]:
+        """Return open directions for a specific grid point (True = open)"""
+        try:
+            cell = grid[check_y][check_x]
+            return {
+                "up": (cell & 1) == 0,
+                "right": (cell & 2) == 0,
+                "down": (cell & 4) == 0,
+                "left": (cell & 8) == 0
+            }
+        except IndexError:
+            return {
+                "up": False, "right": False, "down": False, "left": False
+            }

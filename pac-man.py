@@ -7,23 +7,23 @@ from screens import ScreenManager
 
 def main() -> None:
     """Program entry point."""
-    
+
     # make surface for all screens
     pygame.init()
     pygame.mixer.init()
     surface = pygame.display.set_mode((1200,800))
     pygame.display.set_caption("Pac-Man")
-    
+
     try:
         pygame.mixer.music.load("assets/sounds/background_music.ogg")
         pygame.mixer.music.set_volume(0.3)
         
         # الرقم -1 يعني أن الموسيقى ستتكرر إلى ما لا نهاية (Loop)
         pygame.mixer.music.play(-1)
-    
+
     except pygame.error as e:
         print(f"[Warning] Could not load background music: {e}")
-    
+
     if len(sys.argv) != 2:
         print(
             "[Warning] Invalid number of arguments. "
@@ -40,15 +40,13 @@ def main() -> None:
             "The file must have a .json extension."
         )
         return
-    
+
     config = load_config(config_filename)
-    
+
     mang = ScreenManager(surface, config)
-    
+
     mang.run()
-    
-    
+
 
 if __name__ == "__main__":
     main()
-    
