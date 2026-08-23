@@ -19,4 +19,4 @@ class GameScreen:
 
     def draw(self) -> None:
         self.screen.fill((0, 0, 0))
-        self.entities.draw(self.screen)
+        self.entities.level.draw(self.screen)

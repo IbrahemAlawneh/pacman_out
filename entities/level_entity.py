@@ -134,7 +134,7 @@ class Level(BaseModel):
         try:
             size_increment = int(size_increment)
 
-            if size_increment <= 0:
+            if size_increment <= 0 or size_increment > 5:
                 print(
                     "[Warning] Invalid size_increment. "
                     "Using default value: 5."
@@ -173,16 +173,20 @@ class Level(BaseModel):
                 "Using max_level as current level."
             )
             self.level_id = self.max_level
-        
+
+        if self.width > 20 or self.height > 20:
+            self.width = 20
+            self.height = 20
+
         self.initial_width = self.width
         self.initial_height = self.height
 
         # Create the maze for the current level.
-        self.maze = MazeGenerator(
+        self.maze : MazeGenerator = MazeGenerator(
             size=(self.width, self.height),
             seed=self.seed
         )
-
+        self.maze._width = 25
         return self
 
     def next_level(self) -> bool:
