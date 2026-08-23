@@ -204,7 +204,7 @@ class SettingScreen:
 
         if self.logo:
             scaled_logo = pygame.transform.smoothscale(self.logo, (250, 250))
-            self.screen.blit(scaled_logo, (170, 50))
+            self.screen.blit(scaled_logo, (170, 30))
 
 
         self._draw_audio_section()
@@ -278,7 +278,7 @@ class SettingScreen:
 
     def _draw_cheat_section(self) -> None:
         title = self.font_title.render("CHEAT MODE", True, self.COLOR_ACCENT)
-        self.screen.blit(title, (680, 150))
+        self.screen.blit(title, (720, 150))
         
         subtitle = self.font_label.render("CHEAT CONTROLS CAN BE FOUND IN THE INSTRUCTIONS", True, (200, 200, 200))
         self.screen.blit(subtitle, (600, 210))
