@@ -1,6 +1,7 @@
 import pygame
 from entities import GameEntities
 
+
 class GameScreen:
     """Handles routing the input and triggering the rendering of the game."""
 

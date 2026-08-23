@@ -6,23 +6,19 @@ from .instructions_screen import InstructionsScreen
 from .main_screen import MainScreen
 from .maze_screen import GameScreen
 from .setting_screen import SettingScreen
-import pygame
+
 
 class ScreenManager:
-    """
-    المدير المركزي لجميع شاشات اللعبة (State Machine).
-    يتحكم في الانتقالات، ويدير دورة حياة الشاشات، ويوفر الذاكرة.
-    """
-
+    """Central manager for all games screens (State Machine)
+    Handles transitions, screen lifecycle, and memory"""
     def __init__(self, surface: pygame.Surface, config: dict):
         self.surface = surface
-        self.config = config  # هذا القاموس هو المرجع الحي (Live Reference) للإعدادات
+        self.config = config
 
         self.menus = {
             "main_menu": MainScreen(self.surface),
-            # نمرر الـ config لشاشة الإعدادات لتقرأ منه وتعدل عليه مباشرة
             "settings": SettingScreen(self.surface, self.config),
-            "instructions": InstructionsScreen(self.surface),
+            "instructions": InstructionsScreen(self.surface, self.config),
             "high_scores": HighScoreScreen(self.surface),
         }
 
@@ -33,10 +29,8 @@ class ScreenManager:
         self.running = True
 
     def run(self) -> None:
-        """
-        الحلقة الرئيسية للعبة (The Main Game Loop).
-        هذه الدالة ستبقى تعمل حتى يقرر اللاعب إغلاق اللعبة.
-        """
+        """Main game loop
+        Runs continuously until the player closes the game"""
         while self.running:
 
             for event in pygame.event.get():
@@ -45,12 +39,9 @@ class ScreenManager:
                     continue
 
                 action = self.active_screen.handle_event(event)
-                
-                self._handle_action(action)
 
-            # 2. الرسم وتحديث الشاشة
+                self._handle_action(action)
             self.active_screen.draw()
-            
             pygame.display.flip()
             self.clock.tick(60)
 
@@ -65,13 +56,18 @@ class ScreenManager:
         elif action == "play":
             self.active_screen = GameScreen(self.surface, self.config)
             self.current_screen_name = "play"
-            print("[System] PlayScreen created. Game is starting with current config.")
-
+            print(
+                "[System] PlayScreen created. "
+                "Game is starting with current config."
+            )
 
         elif action == "back_to_menu":
             if self.current_screen_name == "play":
-                print("[System] Exiting game. PlayScreen & GameEntities destroyed (RAM Freed).")
-            
+                print(
+                    "[System] Exiting game. "
+                    "PlayScreen & GameEntities destroyed (RAM Freed)."
+                )
+
             self.active_screen = self.menus["main_menu"]
             self.current_screen_name = "main_menu"
 
