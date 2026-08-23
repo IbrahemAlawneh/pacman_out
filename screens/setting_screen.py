@@ -83,10 +83,10 @@ class SettingScreen:
         self.is_dragging_sfx = False
 
         self.num_buttons = {
-            "ghost_speed": (pygame.Rect(200, 600, 25, 20), pygame.Rect(200, 620, 25, 20)),
-            "pacman_speed": (pygame.Rect(380, 600, 25, 20), pygame.Rect(380, 620, 25, 20)),
-            "width": (pygame.Rect(200, 700, 25, 20), pygame.Rect(200, 720, 25, 20)),
-            "height": (pygame.Rect(380, 700, 25, 20), pygame.Rect(380, 720, 25, 20))
+            "ghost_speed": (pygame.Rect(240, 590, 25, 20), pygame.Rect(240, 610, 25, 20)),
+            "pacman_speed": (pygame.Rect(410, 590, 25, 20), pygame.Rect(410, 610, 25, 20)),
+            "width": (pygame.Rect(240, 690, 25, 20), pygame.Rect(240, 710, 25, 20)),
+            "height": (pygame.Rect(410, 690, 25, 20), pygame.Rect(410, 710, 25, 20))
         }
 
         self.cheat_keys = ["enable_all", "level_skip", "ghost_freeze", "extra_life", "speed_boost", "infinite_lives"]
