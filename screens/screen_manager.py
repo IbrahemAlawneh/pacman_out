@@ -24,7 +24,6 @@ class ScreenManager:
 
         self.current_screen_name = "main_menu"
         self.active_screen = self.menus[self.current_screen_name]
-
         self.clock = pygame.time.Clock()
         self.running = True
 
@@ -39,8 +38,8 @@ class ScreenManager:
                     continue
 
                 action = self.active_screen.handle_event(event)
-                
-                if action != None:
+
+                if action is not None:
                     self._handle_action(action)
 
             self.active_screen.draw()
