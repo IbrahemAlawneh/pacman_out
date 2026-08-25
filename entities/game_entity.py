@@ -6,11 +6,6 @@ from .pacman_entity import Pacman
 
 
 class GameEntities(BaseModel):
-
-    # =========================================================
-    # Configuration values
-    # =========================================================
-
     highscore_filename: str = Field(default="highscores.json")
 
     lives: int = Field(default=3)
@@ -29,19 +24,10 @@ class GameEntities(BaseModel):
     width: int = Field(default=20)
     height: int = Field(default=20)
 
-    # =========================================================
     # Runtime entities
-    # =========================================================
-
     pacman: Pacman = Field(default_factory=Pacman)
-
     ghosts: list[Ghost] = Field(default_factory=list)
-
     level: Level = Field(default_factory=Level)
-
-    # =========================================================
-    # Configuration validation
-    # =========================================================
 
     @model_validator(mode="before")
     @classmethod
@@ -57,7 +43,6 @@ class GameEntities(BaseModel):
         safe_data: dict[str, Any] = {}
 
         for key, value in data.items():
-
             if not isinstance(key, str):
                 print(
                     "[Warning] A configuration key is not a string. "
@@ -66,22 +51,14 @@ class GameEntities(BaseModel):
                 continue
 
             normalized_key = key.strip().lower()
-
             safe_data[normalized_key] = value
-
         return safe_data
 
-    # =========================================================
     # Create game entities
-    # =========================================================
 
     @model_validator(mode="after")
     def create_entities(self) -> "GameEntities":
-
-        # -----------------------------------------------------
         # Pac-Man
-        # -----------------------------------------------------
-
         pacman_config = {
             "lives": self.lives,
             "points_per_pacgum": self.points_per_pacgum,
@@ -89,12 +66,7 @@ class GameEntities(BaseModel):
             "points_per_ghost": self.points_per_ghost,
             "pacman_speed": self.pacman_speed,
         }
-
         self.pacman = Pacman(**pacman_config)
-
-        # -----------------------------------------------------
-        # Ghosts
-        # -----------------------------------------------------
 
         ghosts_mode = self._validate_ghosts_mode(
             self.ghosts_mode
@@ -103,21 +75,13 @@ class GameEntities(BaseModel):
         self.ghosts = []
 
         for ghost_index in range(4):
-
             mode = (ghosts_mode >> ghost_index) & 1
-
             ghost_config = {
                 "ghost_speed": self.ghost_speed,
                 "mode": mode,
             }
-
             ghost = Ghost(**ghost_config)
-
             self.ghosts.append(ghost)
-
-        # -----------------------------------------------------
-        # Level
-        # -----------------------------------------------------
 
         level_config = {
             "seed": self.seed,
@@ -128,16 +92,11 @@ class GameEntities(BaseModel):
         }
 
         self.level = Level(**level_config)
-        
+
         for g in self.ghosts:
             if g.speed > self.pacman.pacman_speed:
                 g.speed = self.pacman.pacman_speed
-
         return self
-
-    # =========================================================
-    # Ghost mode validation
-    # =========================================================
 
     @staticmethod
     def _validate_ghosts_mode(value: Any) -> int:
@@ -146,30 +105,23 @@ class GameEntities(BaseModel):
             value = int(value)
 
         except (ValueError, TypeError):
-
             print(
                 "[Warning] Invalid ghosts_mode. "
                 "Using default value: 1."
             )
-
             return 1
 
         if value < 1:
-
             print(
                 "[Warning] ghosts_mode cannot be less than 1. "
                 "Using value: 1."
             )
-
             return 1
 
         if value > 15:
-
             print(
                 "[Warning] ghosts_mode cannot be greater than 15. "
                 "Using maximum value: 15."
             )
-
             return 15
-
         return value

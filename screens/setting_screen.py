@@ -170,7 +170,8 @@ class SettingScreen:
             self.sfx_volume = ratio
 
     def _handle_number_clicks(self, pos: tuple) -> None:
-        """معالجة ضغطات أزرار (الأسهم) لتغيير الأرقام ضمن القيود"""
+        """Handles arrow-key presses to change the numbers
+        within the specified constraints"""
         limits = {
             "ghost_speed": (40, 100),
             "pacman_speed": (40, 100),
@@ -185,7 +186,8 @@ class SettingScreen:
                 self.config[key] = max(limits[key][0], self.config[key] - 1)
 
     def _handle_cheat_clicks(self, pos: tuple) -> None:
-        """معالجة التبديل في أزرار الـ Cheats بناءً على منطق Master Switch"""
+        """Handles toggling the Cheat buttons
+        based on the Master Switch logic"""
         cheats = self.config["cheats"]
 
         for key, rect in self.cheat_toggles.items():

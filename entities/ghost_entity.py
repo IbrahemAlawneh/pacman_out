@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field, model_validator
 
 
 class Ghost(BaseModel):
-
     speed: int = Field(default=50)
     mode: int = Field(default=0)
 
@@ -76,7 +75,6 @@ class Ghost(BaseModel):
 
         try:
             mode = int(mode)
-
             if mode not in (0, 1):
                 print(
                     "[Warning] Invalid Ghost mode. "
@@ -90,7 +88,6 @@ class Ghost(BaseModel):
                 "Using default mode: 0 (Random)."
             )
             mode = 0
-
         safe_data["mode"] = mode
 
         return safe_data
@@ -121,7 +118,7 @@ class Ghost(BaseModel):
 
     def get_open_walls(
             self, grid: list[list[int]], check_x: int, check_y: int
-        ) -> dict[str, bool]:
+    ) -> dict[str, bool]:
         """Return open directions for a specific grid point (True = open)"""
         try:
             cell = grid[check_y][check_x]

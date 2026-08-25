@@ -1,21 +1,17 @@
 from typing import Any
-
 from pydantic import BaseModel, Field, model_validator
 
 
 class Pacman(BaseModel):
-    # Runtime attributes
     name: str = Field(default="unknown")
     total_points: int = Field(default=0)
 
-    # Pac-Man configuration
     lives: int = Field(default=3)
     points_per_pacgum: int = Field(default=10)
     points_per_super_pacgum: int = Field(default=50)
     points_per_ghost: int = Field(default=200)
     pacman_speed: int = Field(default=50)
 
-    # Used by reset()
     initial_lives: int = Field(default=3)
 
     @model_validator(mode="before")
@@ -29,7 +25,6 @@ class Pacman(BaseModel):
             return {}
 
         safe_data: dict[str, Any] = {}
-
         defaults = {
             "lives": 3,
             "points_per_pacgum": 10,
@@ -39,7 +34,6 @@ class Pacman(BaseModel):
         }
 
         for key, default_value in defaults.items():
-
             if key not in data:
                 continue
 
@@ -56,14 +50,12 @@ class Pacman(BaseModel):
 
             try:
                 value = int(value)
-
                 if value <= 0:
                     print(
                         f"[Warning] Invalid value for '{key}'. "
                         f"Using default value: {default_value}."
                     )
                     continue
-
                 safe_data[key] = value
 
             except (ValueError, TypeError):
@@ -71,7 +63,6 @@ class Pacman(BaseModel):
                     f"[Warning] Invalid value for '{key}'. "
                     f"Using default value: {default_value}."
                 )
-
         return safe_data
 
     @model_validator(mode="after")

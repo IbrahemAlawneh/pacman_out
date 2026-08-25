@@ -1,32 +1,22 @@
 from typing import Any
-
 from pydantic import BaseModel, Field, model_validator
 from mazegenerator import MazeGenerator
 
 
 class Level(BaseModel):
-    # -------------------------
-    # Runtime level information
-    # -------------------------
     level_id: int = Field(default=1)
 
     width: int = Field(default=20)
     height: int = Field(default=20)
 
-    # -------------------------
-    # Level configuration
-    # -------------------------
     max_level: int = Field(default=10)
     max_time: int = Field(default=90)
     seed: int = Field(default=42)
-    
+
     size_increment: int = Field(default=5)
     initial_width: int = Field(default=20)
     initial_height: int = Field(default=20)
 
-    # -------------------------
-    # Maze
-    # -------------------------
     maze: Any = Field(default=None)
 
     @model_validator(mode="before")
@@ -37,7 +27,6 @@ class Level(BaseModel):
 
         Invalid or missing values are replaced with safe defaults.
         """
-
         if not isinstance(data, dict):
             print(
                 "[Warning] Level configuration is invalid. "
@@ -47,14 +36,9 @@ class Level(BaseModel):
 
         safe_data: dict[str, Any] = {}
 
-        # -------------------------
-        # Maximum level
-        # -------------------------
         max_level = data.get("max_level", 10)
-
         try:
             max_level = int(max_level)
-
             if max_level < 3:
                 print(
                     "[Warning] max_level cannot be less than 3. "
@@ -75,17 +59,11 @@ class Level(BaseModel):
                 "Using default value: 10."
             )
             max_level = 10
-
         safe_data["max_level"] = max_level
 
-        # -------------------------
-        # Maximum time
-        # -------------------------
         max_time = data.get("level_max_time", 90)
-
         try:
             max_time = int(max_time)
-
             if max_time <= 0:
                 print(
                     "[Warning] Invalid level_max_time. "
@@ -99,17 +77,11 @@ class Level(BaseModel):
                 "Using default value: 90."
             )
             max_time = 90
-
         safe_data["max_time"] = max_time
 
-        # -------------------------
-        # Seed
-        # -------------------------
         seed = data.get("seed", 42)
-
         try:
             seed = int(seed)
-
             if seed < 0:
                 print(
                     "[Warning] Invalid seed. "
@@ -126,14 +98,9 @@ class Level(BaseModel):
 
         safe_data["seed"] = seed
 
-        # -------------------------
-        # Size increment
-        # -------------------------
         size_increment = data.get("size_increment", 5)
-
         try:
             size_increment = int(size_increment)
-
             if size_increment <= 0 or size_increment > 5:
                 print(
                     "[Warning] Invalid size_increment. "
@@ -149,14 +116,12 @@ class Level(BaseModel):
             size_increment = 5
 
         safe_data["size_increment"] = size_increment
-
         try:
             safe_data["width"] = int(data.get("width", 20))
             safe_data["height"] = int(data.get("height", 20))
         except (ValueError, TypeError):
             safe_data["width"] = 20
             safe_data["height"] = 20
-
         return safe_data
 
     @model_validator(mode="after")
@@ -165,8 +130,6 @@ class Level(BaseModel):
         Validate relationships between Level attributes
         and initialize the first maze.
         """
-
-        # Level ID cannot be greater than maximum level.
         if self.level_id > self.max_level:
             print(
                 "[Warning] level_id is greater than max_level. "
@@ -182,10 +145,10 @@ class Level(BaseModel):
         self.initial_height = self.height
 
         # Create the maze for the current level.
-        self.maze : MazeGenerator = MazeGenerator(
+        self.maze: MazeGenerator = MazeGenerator(
             size=(self.width, self.height),
             seed=self.seed
-        )
+            )
         self.maze._width = 25
         return self
 
@@ -197,7 +160,6 @@ class Level(BaseModel):
             True  -> next level was successfully created.
             False -> current level is already the maximum level.
         """
-
         if self.level_id >= self.max_level:
             print(
                 "[Warning] Maximum level reached. "
@@ -222,7 +184,6 @@ class Level(BaseModel):
             size=(self.width, self.height),
             seed=self.seed
         )
-
         return True
 
     @property

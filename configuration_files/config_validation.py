@@ -2,6 +2,7 @@ import json
 import re
 from typing import Any
 
+
 def _remove_comments(content: str) -> str:
     """Remove supported comments without modifying content inside strings."""
 

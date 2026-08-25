@@ -11,7 +11,7 @@ class HighScoreScreen:
         self.scores_file = Path("configuration_files/high_score.json")
         self.background_image = self._load_image("background_image.jpg")
         self.bar_image = self._load_image("bar_rank.png")
-        # Colors & Fonts
+
         self.HEADER_COLOR = (246, 135, 20)
         self.SCROLL_TRACK_COLOR = (20, 10, 40)
         self.TEXT_COLOR = (255, 255, 255)
@@ -77,6 +77,7 @@ class HighScoreScreen:
 
     def _draw_empty_state(self) -> None:
         """when the file high socre empty it show message"""
+
         box_width = self.BAR_WIDTH
         box_height = 150
         box_rect = pygame.Rect(
@@ -114,7 +115,6 @@ class HighScoreScreen:
         sub_rect = sub_text.get_rect(
             center=(box_rect.centerx, box_rect.centery + 25)
         )
-
         self.screen.blit(msg_text, msg_rect)
         self.screen.blit(sub_text, sub_rect)
 
@@ -148,13 +148,11 @@ class HighScoreScreen:
                 sb_data = self._get_scrollbar_data()
                 if sb_data and sb_data["max_thumb_travel"] > 0:
                     new_thumb_y = event.pos[1] - self.drag_mouse_offset_y
-
                     travel_y = new_thumb_y - self.SCROLLBAR_START_Y
                     travel_y = max(
                         0, min(travel_y, sb_data["max_thumb_travel"])
                     )
                     scroll_ratio = travel_y / sb_data["max_thumb_travel"]
-
                     self.scroll_offset = int(
                         round(scroll_ratio * sb_data["max_scroll_offset"])
                     )
@@ -242,7 +240,6 @@ class HighScoreScreen:
 
         current_y = start_drawing_y
         for index, player in enumerate(self.high_scores):
-
             if current_y + self.BAR_HEIGHT < self.START_Y + self.HEADER_HEIGHT:
                 current_y += self.BAR_HEIGHT + self.GAP_BETWEEN_BARS
                 continue
@@ -293,7 +290,9 @@ class HighScoreScreen:
             current_y += self.BAR_HEIGHT + self.GAP_BETWEEN_BARS
 
     def _get_scrollbar_data(self) -> dict | None:
-        """ترجع إحداثيات وأبعاد السكرول بار إذا كان ظاهراً"""
+        """Returns the coordinates and dimensions
+        of the scrollbar if it is visible"""
+
         total_items = len(self.high_scores)
         if total_items <= self.VISIBLE_ITEMS:
             return None
@@ -322,7 +321,6 @@ class HighScoreScreen:
             self.SCROLLBAR_X, thumb_y, self.SCROLLBAR_WIDTH,
             thumb_height
         )
-
         return {
             "track_rect": track_rect,
             "thumb_rect": thumb_rect,
