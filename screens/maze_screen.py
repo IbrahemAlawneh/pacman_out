@@ -1,167 +1,197 @@
 import pygame
 from entities import GameEntities
-
+from draw_element.draw_maze import DrawMaze
+from draw_element.draw_pacman import DrawPacman
+from draw_element.draw_gum import DrawGum
+# سيتم استيراد باقي الرسامين لاحقاً
+# from draw_element.draw_pacman import DrawPacman
 
 class GameScreen:
-    """Handles routing the input and triggering the
-    rendering of the game."""
-    CELL_SIZE = 24
-    WALL_THICKNESS = 2
-    GLOW_THICKNESS = 8
-
-    BACKGROUND_COLOR = (0, 0, 0)
-    WALL_COLOR = (0, 220, 225)
-    WALL_GLOW_COLOR = (0, 100, 150)
-    SPECIAL_CELL_COLOR = (255, 60, 170)
-    SPECIAL_CELL_RADIUS = 4
-
-    NORTH = 1
-    EAST = 2
-    SOUTH = 4
-    WEST = 8
-
+    """Handles routing the input and triggering the rendering of the game."""
+    
     def __init__(self, screen: pygame.Surface, config: dict):
         self.screen = screen
         self.config = config
         self.entities = GameEntities(**config)
 
-        self._maze_surface = None
-        self._cached_level_id = None
+        self.maze_draw = DrawMaze(self.screen)
+        self.pacman_draw = DrawPacman(self.screen)
+        self.gum_draw = DrawGum(self.screen)
+        self._calculate_layout()
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
         if event.type == pygame.KEYDOWN:
+
 
             if event.key in (pygame.K_ESCAPE, pygame.K_p):
                 print("pause screen is open")
                 return "back_to_menu"
 
-            elif event.key in (pygame.K_UP, pygame.K_w):
-                print("[Action] Move UP")
-                # self.pacman.set_direction("UP")
-
-            elif event.key in (pygame.K_DOWN, pygame.K_s):
-                print("[Action] Move DOWN")
-                # self.pacman.set_direction("DOWN")
-
-            elif event.key in (pygame.K_LEFT, pygame.K_a):
-                print("[Action] Move LEFT")
-                # self.pacman.set_direction("LEFT")
-
-            elif event.key in (pygame.K_RIGHT, pygame.K_d):
-                print("[Action] Move RIGHT")
-                # self.pacman.set_direction("RIGHT")
-
-            elif event.key in (
-                pygame.K_F1, pygame.K_F2, pygame.K_F3,
-                pygame.K_F4, pygame.K_F5
-            ):
+            elif event.key in (pygame.K_F1, pygame.K_F2, pygame.K_F3, pygame.K_F4, pygame.K_F5):
                 cheats = self.config.get("cheats")
-
                 if cheats:
                     enable_all = cheats.get("enable_all", False)
 
                     if event.key == pygame.K_F1:
                         if enable_all or cheats.get("level_skip", False):
                             print("[Cheat] F1 Activated: Level Skipped!")
-                            # self.level_manager.skip()
+                            self.entities.level.next_level()
+                            self._calculate_layout()
 
                     elif event.key == pygame.K_F2:
                         if enable_all or cheats.get("ghost_freeze", False):
                             print("[Cheat] F2 Activated: Ghosts Frozen!")
-                            # self.ghost_manager.freeze_all()
 
                     elif event.key == pygame.K_F3:
                         if enable_all or cheats.get("extra_life", False):
                             print("[Cheat] F3 Activated: Extra Life Added!")
-                            # self.config["lives"] += 1
 
                     elif event.key == pygame.K_F4:
                         if enable_all or cheats.get("speed_boost", False):
                             print("[Cheat] F4 Activated: Speed Boost!")
-                            # self.pacman.apply_speed_boost()
 
                     elif event.key == pygame.K_F5:
                         if enable_all or cheats.get("infinite_lives", False):
-                            print(
-                                "[Cheat] F5 Activated: Pac-Man have "
-                                "infinite_lives"
-                            )
-                            # self.pacman.set_invincible(True)
+                            print("[Cheat] F5 Activated: Pac-Man has infinite lives!")
+
         return None
 
     def update(self) -> None:
-        self.entities.update_logic()
+        keys = pygame.key.get_pressed()
+        pac = self.entities.pacman
+        
+        
+        max_physical_speed = self.cell_size / 5.0
+        speed_ratio = pac.pacman_speed / 100.0 
+        step = max(1, int(max_physical_speed * speed_ratio))
 
-    def _build_maze_surface(self, level) -> pygame.Surface:
-        """Render the full maze once onto an off-screen surface"""
-        grid = level.grid
-        width = len(grid[0]) * self.CELL_SIZE
-        height = len(grid) * self.CELL_SIZE
-        surface = pygame.Surface((width, height))
-        surface.fill(self.BACKGROUND_COLOR)
+        if keys[pygame.K_UP] or keys[pygame.K_w]: pac.next_direction = "UP"
+        elif keys[pygame.K_DOWN] or keys[pygame.K_s]: pac.next_direction = "DOWN"
+        elif keys[pygame.K_LEFT] or keys[pygame.K_a]: pac.next_direction = "LEFT"
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]: pac.next_direction = "RIGHT"
 
-        for row_idx, row in enumerate(grid):
-            for col_idx, cell in enumerate(row):
-                if cell == 0:
-                    continue
-                self._draw_cell(surface, cell, row_idx, col_idx)
-        return surface
+        center_x = pac.x + (self.cell_size // 2)
+        center_y = pac.y + (self.cell_size // 2)
+        grid_x = int(center_x // self.cell_size)
+        grid_y = int(center_y // self.cell_size)
 
-    def _draw_cell(
-            self, surface: pygame.Surface, cell: int, row_idx: int,
-            col_idx: int
-    ) -> None:
-        """Draw a single maze cell (special title or bitmask walls)"""
-        x = col_idx * self.CELL_SIZE
-        y = row_idx * self.CELL_SIZE
-        rect = pygame.Rect(x, y, self.CELL_SIZE, self.CELL_SIZE)
+        perfect_x = grid_x * self.cell_size
+        perfect_y = grid_y * self.cell_size
 
-        if cell == 15:
-            pygame.draw.rect(
-                surface, self.SPECIAL_CELL_COLOR, rect,
-                border_radius=self.SPECIAL_CELL_RADIUS
-            )
-            return
+        if pac.next_direction != "NONE" and pac.next_direction != pac.direction:
+            if self._is_path_open(grid_x, grid_y, pac.next_direction):
+                tolerance = step * 2 
+                if abs(pac.x - perfect_x) <= tolerance and abs(pac.y - perfect_y) <= tolerance:
+                    pac.x = perfect_x
+                    pac.y = perfect_y
+                    pac.direction = pac.next_direction
+                    pac.next_direction = "NONE"
 
-        for color, thickness in (
-            (self.WALL_GLOW_COLOR, self.GLOW_THICKNESS),
-            (self.WALL_COLOR, self.WALL_THICKNESS)
-        ):
-            if cell & self.NORTH:
-                pygame.draw.line(
-                    surface, color, rect.topleft, rect.topright, thickness
-                )
-            if cell & self.EAST:
-                pygame.draw.line(
-                    surface, color, rect.topright, rect.bottomright, thickness
-                )
-            if cell & self.SOUTH:
-                pygame.draw.line(
-                    surface, color, rect.bottomleft,
-                    rect.bottomright, thickness
-                )
-            if cell & self.WEST:
-                pygame.draw.line(
-                    surface, color, rect.topleft, rect.bottomleft, thickness
-                )
+        can_move = True
+        if not self._is_path_open(grid_x, grid_y, pac.direction):
+            if pac.direction == "UP" and pac.y <= perfect_y:
+                pac.y = perfect_y
+                can_move = False
+            elif pac.direction == "DOWN" and pac.y >= perfect_y:
+                pac.y = perfect_y
+                can_move = False
+            elif pac.direction == "LEFT" and pac.x <= perfect_x:
+                pac.x = perfect_x
+                can_move = False
+            elif pac.direction == "RIGHT" and pac.x >= perfect_x:
+                pac.x = perfect_x
+                can_move = False
 
-    def draw_grid(self, level) -> None:
-        """Blit the cached maze surface,
-        rebuilding only if the level changed"""
-        if not level.grid:
-            return
+        # 5. الحركة الفعلية
+        if can_move and pac.direction != "NONE":
+            if pac.direction == "UP": pac.y -= step
+            elif pac.direction == "DOWN": pac.y += step
+            elif pac.direction == "LEFT": pac.x -= step
+            elif pac.direction == "RIGHT": pac.x += step
+            
+        pac_grid_x = int((pac.x + (self.cell_size // 2)) // self.cell_size)
+        pac_grid_y = int((pac.y + (self.cell_size // 2)) // self.cell_size)
 
-        if self._cached_level_id != level.level_id:
-            self._maze_surface = self._build_maze_surface(level)
-            self._cached_level_id = level.level_id
-        offset_x = (
-            self.screen.get_width() - self._maze_surface.get_width()
-        ) // 2
-        offset_y = (
-            self.screen.get_height() - self._maze_surface.get_height()
-        ) // 2
-        self.screen.blit(self._maze_surface, (offset_x, offset_y))
+        for gum in self.entities.gums:
+            if not gum.is_eaten and gum.grid_x == pac_grid_x and gum.grid_y == pac_grid_y:
+                
+                gum.is_eaten = True
+                
+                if gum.is_super:
+                    pac.total_points += gum.points
+                    print(f"[Action] Super Gum eaten! Total Points: {pac.total_points}")
+                else:
+                    pac.total_points += gum.points
+                    print(f"[Action] Gum eaten! Total Points: {pac.total_points}")
+            if not gum.is_eaten and gum.grid_x == pac_grid_x and gum.grid_y == pac_grid_y:
+                gum.is_eaten = True
+                
+                pac.total_points += gum.points 
+                
+                print(f"[Action] Gum eaten! Total Points: {pac.total_points}")
 
+
+    def _is_path_open(self, grid_x: int, grid_y: int, direction: str) -> bool:
+        try:
+            cell = self.entities.level.grid[grid_y][grid_x]
+        except IndexError:
+            return False
+
+        if direction == "UP":
+            return (cell & 1) == 0
+        elif direction == "RIGHT":
+            return (cell & 2) == 0
+        elif direction == "DOWN":
+            return (cell & 4) == 0
+        elif direction == "LEFT":
+            return (cell & 8) == 0
+            
+        return False
+
+    def _calculate_layout(self) -> None:
+        grid = self.entities.level.grid
+        grid_width = len(grid[0])
+        grid_height = len(grid)
+
+        MAX_W, MAX_H = 1000, 700
+        cell_w = MAX_W // grid_width
+        cell_h = MAX_H // grid_height
+        
+        self.cell_size = min(cell_w, cell_h, 40) 
+
+        maze_width_px = grid_width * self.cell_size
+        maze_height_px = grid_height * self.cell_size
+
+        self.offset_x = (self.screen.get_width() - maze_width_px) // 2
+        self.offset_y = (self.screen.get_height() - maze_height_px) // 2
+
+        center_grid_x = grid_width // 2
+        center_grid_y = grid_height // 2
+        
+        while grid[center_grid_y][center_grid_x] == 15:
+                center_grid_x -= 1
+                center_grid_y -= 1
+
+        pac = self.entities.pacman
+        pac.x = center_grid_x * self.cell_size
+        pac.y = center_grid_y * self.cell_size
+
+            
+    
+        pac.direction = "NONE"
+        pac.next_direction = "NONE"
+    
     def draw(self) -> None:
         self.screen.fill((0, 0, 0))
-        self.draw_grid(self.entities.level)
+
+        self.maze_draw.draw(
+            self.entities.level, self.cell_size, self.offset_x, self.offset_y
+        )
+        
+        self.gum_draw.draw (
+                    self.entities.gums, self.cell_size, self.offset_x, self.offset_y
+                )
+        
+        self.pacman_draw.draw(
+            self.entities.pacman, self.cell_size, self.offset_x, self.offset_y
+        )

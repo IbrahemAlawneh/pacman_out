@@ -98,22 +98,22 @@ class Level(BaseModel):
 
         safe_data["seed"] = seed
 
-        size_increment = data.get("size_increment", 5)
+        size_increment = data.get("size_increment", 2)
         try:
             size_increment = int(size_increment)
-            if size_increment <= 0 or size_increment > 5:
+            if size_increment <= 0 or size_increment > 2:
                 print(
                     "[Warning] Invalid size_increment. "
                     "Using default value: 5."
                 )
-                size_increment = 5
+                size_increment = 2
 
         except (ValueError, TypeError):
             print(
                 "[Warning] Invalid size_increment. "
                 "Using default value: 5."
             )
-            size_increment = 5
+            size_increment = 2
 
         safe_data["size_increment"] = size_increment
         try:
@@ -144,7 +144,6 @@ class Level(BaseModel):
         self.initial_width = self.width
         self.initial_height = self.height
 
-        # Create the maze for the current level.
         self.maze: MazeGenerator = MazeGenerator(
             size=(self.width, self.height),
             seed=self.seed

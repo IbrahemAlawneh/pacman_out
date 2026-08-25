@@ -1,0 +1,25 @@
+import pygame
+from typing import Any # أو استيراد كلاس Gum إذا كان في ملف منفصل
+
+class DrawGum:
+    def __init__(self, screen: pygame.Surface):
+        self.screen = screen
+        self.normal_color = (255, 184, 174)
+        self.super_color = (255, 255, 255)
+
+    def draw(self, gums: list[Any], cell_size: int, offset_x: int, offset_y: int) -> None:
+        normal_radius = max(2, cell_size // 6)
+        super_radius = max(4, cell_size // 3)
+
+        for gum in gums:
+
+            if gum.is_eaten:
+                continue
+
+            center_x = (gum.grid_x * cell_size) + offset_x + (cell_size // 2)
+            center_y = (gum.grid_y * cell_size) + offset_y + (cell_size // 2)
+
+            if gum.is_super:
+                pygame.draw.circle(self.screen, self.super_color, (center_x, center_y), super_radius)
+            else:
+                pygame.draw.circle(self.screen, self.normal_color, (center_x, center_y), normal_radius)

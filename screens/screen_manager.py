@@ -42,6 +42,10 @@ class ScreenManager:
                 if action is not None:
                     self._handle_action(action)
 
+
+            if hasattr(self.active_screen,"update"):
+                self.active_screen.update()
+
             self.active_screen.draw()
             pygame.display.flip()
             self.clock.tick(60)

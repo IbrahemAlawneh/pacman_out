@@ -6,7 +6,7 @@
     "level_max_time": 90,
     "max_level": 10,
     "width": 20,
-    "height": 20,
+    "height": 15,
 
     # Pac-Man / player configuration
     "lives": 3,
