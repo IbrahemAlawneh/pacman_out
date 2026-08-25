@@ -3,8 +3,6 @@ from entities import GameEntities
 from draw_element.draw_maze import DrawMaze
 from draw_element.draw_pacman import DrawPacman
 from draw_element.draw_gum import DrawGum
-# سيتم استيراد باقي الرسامين لاحقاً
-# from draw_element.draw_pacman import DrawPacman
 
 class GameScreen:
     """Handles routing the input and triggering the rendering of the game."""
@@ -36,6 +34,7 @@ class GameScreen:
                         if enable_all or cheats.get("level_skip", False):
                             print("[Cheat] F1 Activated: Level Skipped!")
                             self.entities.level.next_level()
+                            self.entities.gum_reset()
                             self._calculate_layout()
 
                     elif event.key == pygame.K_F2:
@@ -57,19 +56,55 @@ class GameScreen:
         return None
 
     def update(self) -> None:
-        keys = pygame.key.get_pressed()
         pac = self.entities.pacman
+        keys = pygame.key.get_pressed()
+
+        self._process_input(pac, keys)
         
+        step = self._calculate_speed(pac)
         
+        self._update_pacman_position(pac, step)
+        
+        self._check_gum_collisions(pac)
+        self._check_game_state()
+        
+    
+    def _check_game_state(self) -> None:
+        if self.entities.pacman.lives <= 0:
+            print("Game Over! All lives lost.")
+            return "back_to_menu"
+
+        all_gums_eaten = len(self.entities.gums) > 0 and all(gum.is_eaten for gum in self.entities.gums)
+        
+        if all_gums_eaten:
+            print(f"Level {self.entities.level.level_id} Complete! Moving to next level...")
+            
+            self.entities.level.next_level()
+            
+            self.entities.gum_reset()
+            
+            self._calculate_layout()
+            
+            # د. (مستقبلاً) إعادة الأشباح لنقطة البداية
+            # for ghost in self.entities.ghosts:
+            #     ghost.reset()
+
+    def _process_input(self, pac, keys) -> None:
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
+            pac.next_direction = "UP"
+        elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            pac.next_direction = "DOWN"
+        elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            pac.next_direction = "LEFT"
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            pac.next_direction = "RIGHT"
+
+    def _calculate_speed(self, pac) -> int:
         max_physical_speed = self.cell_size / 5.0
         speed_ratio = pac.pacman_speed / 100.0 
-        step = max(1, int(max_physical_speed * speed_ratio))
+        return max(1, int(max_physical_speed * speed_ratio))
 
-        if keys[pygame.K_UP] or keys[pygame.K_w]: pac.next_direction = "UP"
-        elif keys[pygame.K_DOWN] or keys[pygame.K_s]: pac.next_direction = "DOWN"
-        elif keys[pygame.K_LEFT] or keys[pygame.K_a]: pac.next_direction = "LEFT"
-        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]: pac.next_direction = "RIGHT"
-
+    def _update_pacman_position(self, pac, step: int) -> None:
         center_x = pac.x + (self.cell_size // 2)
         center_y = pac.y + (self.cell_size // 2)
         grid_x = int(center_x // self.cell_size)
@@ -102,13 +137,13 @@ class GameScreen:
                 pac.x = perfect_x
                 can_move = False
 
-        # 5. الحركة الفعلية
         if can_move and pac.direction != "NONE":
             if pac.direction == "UP": pac.y -= step
             elif pac.direction == "DOWN": pac.y += step
             elif pac.direction == "LEFT": pac.x -= step
             elif pac.direction == "RIGHT": pac.x += step
-            
+
+    def _check_gum_collisions(self, pac) -> None:
         pac_grid_x = int((pac.x + (self.cell_size // 2)) // self.cell_size)
         pac_grid_y = int((pac.y + (self.cell_size // 2)) // self.cell_size)
 
@@ -116,20 +151,11 @@ class GameScreen:
             if not gum.is_eaten and gum.grid_x == pac_grid_x and gum.grid_y == pac_grid_y:
                 
                 gum.is_eaten = True
-                
-                if gum.is_super:
-                    pac.total_points += gum.points
-                    print(f"[Action] Super Gum eaten! Total Points: {pac.total_points}")
-                else:
-                    pac.total_points += gum.points
-                    print(f"[Action] Gum eaten! Total Points: {pac.total_points}")
-            if not gum.is_eaten and gum.grid_x == pac_grid_x and gum.grid_y == pac_grid_y:
-                gum.is_eaten = True
-                
-                pac.total_points += gum.points 
+                pac.total_points += gum.points
                 
                 print(f"[Action] Gum eaten! Total Points: {pac.total_points}")
 
+                    
 
     def _is_path_open(self, grid_x: int, grid_y: int, direction: str) -> bool:
         try:

@@ -25,6 +25,8 @@ class GameEntities(BaseModel):
 
     width: int = Field(default=20)
     height: int = Field(default=20)
+    points_per_super_pacgum: int = Field(default=40)
+    points_pes_pacgum:int = Field(default=20)
 
     # Runtime entities
     pacman: Pacman = Field(default_factory=Pacman)
@@ -65,7 +67,6 @@ class GameEntities(BaseModel):
         }
         self.pacman = Pacman(**pacman_config)
 
-        # 2. تهيئة الأشباح
         ghosts_mode = self._validate_ghosts_mode(self.ghosts_mode)
         self.ghosts = []
         for ghost_index in range(4):
@@ -105,9 +106,9 @@ class GameEntities(BaseModel):
                 is_corner = (row_idx == 0 or row_idx == max_row) and (col_idx == 0 or col_idx == max_col)
 
                 if is_corner:
-                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx, is_super=True))
+                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,is_super=True,points=self.points_per_super_pacgum))
                 else:
-                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx))
+                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,points=self.points_pes_pacgum))
 
         return self
 
@@ -152,7 +153,6 @@ class GameEntities(BaseModel):
                 is_corner = (row_idx == 0 or row_idx == max_row) and (col_idx == 0 or col_idx == max_col)
                 
                 if is_corner:
-                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx, is_super=True))
+                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx, is_super=True, points=self.points_per_super_pacgum))
                 else:
-                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx))
-                    
+                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,points=self.points_pes_pacgum))
