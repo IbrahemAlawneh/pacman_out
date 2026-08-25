@@ -39,8 +39,10 @@ class ScreenManager:
                     continue
 
                 action = self.active_screen.handle_event(event)
+                
+                if action != None:
+                    self._handle_action(action)
 
-                self._handle_action(action)
             self.active_screen.draw()
             pygame.display.flip()
             self.clock.tick(60)
