@@ -23,8 +23,11 @@ class GameEntities(BaseModel):
 
     width: int = Field(default=20)
     height: int = Field(default=20)
-    points_per_super_pacgum: int = Field(default=50)
-    points_per_pacgum:int = Field(default=20)
+    points_per_super_pacgum: int = Field(default=40)
+    points_pes_pacgum:int = Field(default=20)
+    
+    scared_duration_ms: int = Field(default=10000)
+    ghost_respawn_ms: int = Field(default=5000)
 
     # Runtime entities
     pacman: Pacman = Field(default_factory=Pacman)
@@ -66,16 +69,6 @@ class GameEntities(BaseModel):
         }
         self.pacman = Pacman(**pacman_config)
 
-        ghosts_mode = self._validate_ghosts_mode(self.ghosts_mode)
-        self.ghosts = []
-        for ghost_index in range(4):
-            mode = (ghosts_mode >> ghost_index) & 1
-            ghost_config = {
-                "ghost_speed": self.ghost_speed,
-                "mode": mode,
-            }
-            ghost = Ghost(**ghost_config)
-            self.ghosts.append(ghost)
 
         level_config = {
             "seed": self.seed,
@@ -85,18 +78,52 @@ class GameEntities(BaseModel):
             "height": self.height,
         }
         self.level = Level(**level_config)
+        
+        
+        ghosts_mode = self._validate_ghosts_mode(self.ghosts_mode)
+        self.ghosts = []
+        
+        max_x = self.level.width - 1
+        max_y = self.level.height - 1
+                
+        corners = [
+            (0, 0),
+            (max_x, 0),
+            (0, max_y),
+            (max_x, max_y)
+            ]
+        
+        colors = [
+            (255, 0, 0),
+            (255, 184, 255),
+            (0, 255, 255),
+            (255, 184, 82)
+            ]
+        
+        for ghost_index in range(4):
+            mode = (ghosts_mode >> ghost_index) & 1
+
+            grid_x, grid_y = corners[ghost_index]
+            ghost_config = {
+                "ghost_speed": self.ghost_speed,
+                "mode": mode,
+                "color": colors[ghost_index],
+                "x": grid_x, 
+                "y": grid_y,
+                "spawn_x": grid_x,
+                "spawn_y": grid_y,
+                "chase_algorithm": ghost_index % 2
+                }
+            ghost = Ghost(**ghost_config)
+            self.ghosts.append(ghost)
 
         self.gums = []
                 
         max_row = len(self.level.grid) - 1
         max_col = len(self.level.grid[0]) - 1
         
-        self.points_per_super_pacgum = max(
-            50, min(self.points_per_super_pacgum , 200)
-        )
-        self.points_per_pacgum = max(
-            10, min(self.points_per_pacgum, 100)
-        )
+        self.points_per_super_pacgum = max(20, min(self.points_per_super_pacgum , 200))
+        self.points_pes_pacgum = max(10, min(self.points_pes_pacgum, 100))
         
         for row_idx, row in enumerate(self.level.grid):
             for col_idx, cell in enumerate(row):
@@ -109,7 +136,7 @@ class GameEntities(BaseModel):
                 if is_corner:
                     self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,is_super=True,points=self.points_per_super_pacgum))
                 else:
-                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,points=self.points_per_pacgum))
+                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,points=self.points_pes_pacgum))
 
         return self
 
@@ -156,4 +183,4 @@ class GameEntities(BaseModel):
                 if is_corner:
                     self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx, is_super=True, points=self.points_per_super_pacgum))
                 else:
-                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,points=self.points_per_pacgum))
+                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,points=self.points_pes_pacgum))

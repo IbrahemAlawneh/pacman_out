@@ -6,7 +6,7 @@ class PauseScreen:
 
     MENU, HELP = "menu", "help"
     OVERLAY = (4, 7, 22, 145)
-    PANEL = (13, 18, 46, 145)
+    PANEL = (13, 18, 46, 245)
     CYAN, PINK, PURPLE = (100, 240, 255), (240, 130, 255), (255, 215, 255)
     WHITE, MUTED, LINE = (240, 245, 255), (150, 165, 205), (63, 81, 132)
     PURPLE_BTN = ((225, 150, 255), (110, 45, 160), (240, 190, 255))
