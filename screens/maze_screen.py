@@ -48,9 +48,7 @@ class GameScreen:
                     if event.key == pygame.K_F1:
                         if enable_all or cheats.get("level_skip", False):
                             print("[Cheat] F1 Activated: Level Skipped!")
-                            self.entities.level.next_level()
-                            self.entities.gum_reset()
-                            self._calculate_layout()
+                            self.skip_level()
 
                     elif event.key == pygame.K_F2:
                         if enable_all or cheats.get("ghost_freeze", False):
@@ -278,6 +276,11 @@ class GameScreen:
         elif direction == "LEFT":
             return (cell & 8) == 0
         return False
+
+    def skip_level(self) -> None:
+        self.entities.level.next_level()
+        self.entities.gum_reset()
+        self._reset_positions()
 
     def _calculate_layout(self) -> None:
         grid = self.entities.level.grid

@@ -70,8 +70,6 @@ class Ghost(BaseModel):
             speed = 40
 
         safe_data["speed"] = speed
-
-        # فحص النمط (Mode)
         mode = data.get("mode", 0)
 
         if mode is None or (isinstance(mode, str) and not mode.strip()):

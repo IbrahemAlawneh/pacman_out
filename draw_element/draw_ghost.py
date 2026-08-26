@@ -11,7 +11,7 @@ class DrawGhost:
     def draw(self, ghosts: list[Any], cell_size: int, offset_x: int, offset_y: int) -> None:
 
         for ghost in ghosts:
-            
+
             radius = int((cell_size * 0.8) / 2)
             
 
