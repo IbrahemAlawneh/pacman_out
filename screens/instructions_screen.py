@@ -4,10 +4,12 @@ import pygame
 
 class InstructionsScreen:
     """Draw the instructions screen and handle the return key."""
+
     def __init__(self, surface: pygame.Surface, config: dict) -> None:
         self.surface = surface
         self.config = config
         self._init_assets()
+
         p_pacgum = max(
             10, min(self.config.get("points_per_pacgum", 10), 100)
         )
@@ -83,6 +85,7 @@ class InstructionsScreen:
         radius: int = 16
     ) -> None:
         """Draw a compact panel with a shadow and neon border."""
+
         shadow = pygame.Surface(
             (rect.width + 18, rect.height + 18), pygame.SRCALPHA
         )
@@ -103,6 +106,7 @@ class InstructionsScreen:
             letter: str, arrow: str
     ) -> None:
         """Draw one movement key."""
+
         rect = pygame.Rect(x, y, 65, 65)
         self._draw_glass_panel(rect, self.NEON_CYAN, 14)
         self.surface.blit(
@@ -116,6 +120,7 @@ class InstructionsScreen:
 
     def _draw_keys_panel(self) -> None:
         """Draw the movement panel on the right."""
+
         panel = pygame.Rect(750, 200, 350, 320)
         self._draw_glass_panel(panel, self.NEON_PINK, 20)
         title = self.font_text.render("MOVEMENT", True, self.NEON_CYAN)
@@ -192,10 +197,10 @@ class InstructionsScreen:
         )
         self.surface.blit(title, (80, 110))
         pygame.draw.line(
-            self.surface, self.NEON_CYAN, (80, 178), (180, 178), 3
+            self.surface, self.NEON_CYAN, (80, 200), (190, 200), 3
         )
         pygame.draw.line(
-            self.surface, self.NEON_PINK, (192, 178), (225, 178), 3
+            self.surface, self.NEON_PINK, (205, 200), (240, 200), 3
         )
 
         y = 250
