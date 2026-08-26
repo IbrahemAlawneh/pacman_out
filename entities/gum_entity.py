@@ -8,9 +8,3 @@ class Gum(BaseModel):
     
     is_super: bool = Field(default=False)
     is_eaten: bool = Field(default=False)
-    
-
-    @model_validator(mode="after")
-    def adjust_points(self) -> "Gum":
-        if self.points < 1:
-            self.points = 1

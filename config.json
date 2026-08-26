@@ -5,15 +5,15 @@
     "seed": 42,
     "level_max_time": 90,
     "max_level": 10,
-    "width": 20,
+    "width": 40,
     "height": 15,
 
     # Pac-Man / player configuration
     "lives": 3,
-    "points_pes_pacgum": dd,
-    "points_per_super_pacgum": -80,
-    "points_per_ghost": 50,
-    "pacman_speed": 50,
+    "points_pes_pacgum": -844,
+    "points_per_super_pacgum": -5580,
+    "points_per_ghost": 8880,
+    "pacman_speed": 150,
 
     # Ghost configuration
     "ghost_speed": 50,

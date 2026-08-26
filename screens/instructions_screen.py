@@ -9,9 +9,9 @@ class InstructionsScreen:
         self.surface = surface
         self.config = config
         self._init_assets()
-        p_pacgum = self.config.get("points_per_pacgum", 20)
-        p_super = self.config.get("points_per_super_pacgum", 50)
-        p_ghost = self.config.get("points_per_ghost", 200)
+        p_pacgum = max(10, min(self.config.get("points_per_pacgum", 10), 100))
+        p_super = max(20, min(self.config.get("points_per_super_pacgum", 20), 200))
+        p_ghost = max(50, min(self.config.get("points_per_ghost", 50), 500))
 
         self.instructions = [
             ("GAME RULES", self.HEADER_COLOR, None),

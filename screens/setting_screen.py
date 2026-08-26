@@ -322,9 +322,17 @@ class SettingScreen:
                 box_rect, border_radius=5
             )
 
-            val_text = self.font_value.render(
-                str(self.config[key]), True, (0, 0, 0)
-            )
+            
+            
+            if key in ("ghost_speed", "pacman_speed"):
+                val_text = self.font_value.render(
+                    str(max(40, min(self.config[key], 100))), True, (0, 0, 0)
+                    )
+            else:
+                val_text = self.font_value.render(
+                    str(max(5, min(self.config[key], 20))), True, (0, 0, 0)
+                    )
+                
             self.screen.blit(val_text, (x + 10, y + 38))
 
             if self.arrow_up and self.arrow_down:

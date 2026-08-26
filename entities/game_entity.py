@@ -59,7 +59,8 @@ class GameEntities(BaseModel):
 
     @model_validator(mode="after")
     def create_entities(self) -> "GameEntities":
-
+        
+        self.points_per_ghost = max(50, min(self.points_per_ghost, 500))
         pacman_config = {
             "lives": self.lives,
             "points_per_ghost": self.points_per_ghost,
@@ -87,15 +88,13 @@ class GameEntities(BaseModel):
         }
         self.level = Level(**level_config)
 
-
-        for g in self.ghosts:
-            if g.speed > self.pacman.pacman_speed:
-                g.speed = self.pacman.pacman_speed
-
         self.gums = []
                 
         max_row = len(self.level.grid) - 1
         max_col = len(self.level.grid[0]) - 1
+        
+        self.points_per_super_pacgum = max(20, min(self.points_per_super_pacgum , 200))
+        self.points_pes_pacgum = max(10, min(self.points_pes_pacgum, 100))
         
         for row_idx, row in enumerate(self.level.grid):
             for col_idx, cell in enumerate(row):
