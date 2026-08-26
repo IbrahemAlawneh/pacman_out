@@ -1,7 +1,5 @@
 from typing import Any
 from pydantic import BaseModel, Field, model_validator
-
-# تأكد من أن أسماء الملفات تتطابق مع مشروعك
 from .ghost_entity import Ghost
 from .level_entity import Level
 from .pacman_entity import Pacman
@@ -25,8 +23,8 @@ class GameEntities(BaseModel):
 
     width: int = Field(default=20)
     height: int = Field(default=20)
-    points_per_super_pacgum: int = Field(default=40)
-    points_pes_pacgum:int = Field(default=20)
+    points_per_super_pacgum: int = Field(default=50)
+    points_per_pacgum:int = Field(default=20)
 
     # Runtime entities
     pacman: Pacman = Field(default_factory=Pacman)
@@ -93,8 +91,12 @@ class GameEntities(BaseModel):
         max_row = len(self.level.grid) - 1
         max_col = len(self.level.grid[0]) - 1
         
-        self.points_per_super_pacgum = max(20, min(self.points_per_super_pacgum , 200))
-        self.points_pes_pacgum = max(10, min(self.points_pes_pacgum, 100))
+        self.points_per_super_pacgum = max(
+            50, min(self.points_per_super_pacgum , 200)
+        )
+        self.points_per_pacgum = max(
+            10, min(self.points_per_pacgum, 100)
+        )
         
         for row_idx, row in enumerate(self.level.grid):
             for col_idx, cell in enumerate(row):
@@ -107,7 +109,7 @@ class GameEntities(BaseModel):
                 if is_corner:
                     self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,is_super=True,points=self.points_per_super_pacgum))
                 else:
-                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,points=self.points_pes_pacgum))
+                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,points=self.points_per_pacgum))
 
         return self
 
@@ -154,4 +156,4 @@ class GameEntities(BaseModel):
                 if is_corner:
                     self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx, is_super=True, points=self.points_per_super_pacgum))
                 else:
-                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,points=self.points_pes_pacgum))
+                    self.gums.append(Gum(grid_x=col_idx, grid_y=row_idx,points=self.points_per_pacgum))

@@ -4,14 +4,19 @@ import pygame
 
 class InstructionsScreen:
     """Draw the instructions screen and handle the return key."""
-
     def __init__(self, surface: pygame.Surface, config: dict) -> None:
         self.surface = surface
         self.config = config
         self._init_assets()
-        p_pacgum = max(10, min(self.config.get("points_per_pacgum", 10), 100))
-        p_super = max(20, min(self.config.get("points_per_super_pacgum", 20), 200))
-        p_ghost = max(50, min(self.config.get("points_per_ghost", 50), 500))
+        p_pacgum = max(
+            10, min(self.config.get("points_per_pacgum", 10), 100)
+        )
+        p_super = max(
+            50, min(self.config.get("points_per_super_pacgum", 50), 200)
+        )
+        p_ghost = max(
+            200, min(self.config.get("points_per_ghost", 200), 200)
+        )
 
         self.instructions = [
             ("GAME RULES", self.HEADER_COLOR, None),
@@ -28,7 +33,7 @@ class InstructionsScreen:
                 self.TEXT_COLOR, None
             ),
             (
-                "CHEAT MODE (Active only during gameplay)",
+                "CHEAT MODE (Enable in Settings first)",
                 self.NEON_PINK, None
             ),
             ("Skip the current level", self.TEXT_COLOR, "F1"),

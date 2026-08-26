@@ -27,7 +27,6 @@ class DrawMaze:
         grid_height_count = len(grid)
         grid_width_count = len(grid[0])
 
-
         width_px = grid_width_count * cell_size
         height_px = grid_height_count * cell_size
         
@@ -39,7 +38,6 @@ class DrawMaze:
                 if cell == 0:
                     continue
                 self._draw_cell(surface, cell, row_idx, col_idx, cell_size)
-                
         return surface
 
     def _draw_cell(self, surface: pygame.Surface, cell: int, row_idx: int, col_idx: int, cell_size: int) -> None:
@@ -49,26 +47,40 @@ class DrawMaze:
         rect = pygame.Rect(x, y, cell_size, cell_size)
 
         if cell == 15:
-            pygame.draw.rect(
-                surface, self.SPECIAL_CELL_COLOR, rect,
-                border_radius=self.SPECIAL_CELL_RADIUS
-            )
+            pygame.draw.rect(surface, (180, 0, 100), rect.inflate(8, 8), border_radius=8)
+            pygame.draw.rect(surface, (255, 20, 150), rect.inflate(3, 3), border_radius=6)
+            pygame.draw.rect(surface, (255, 70, 190), rect, border_radius=5)
+            pygame.draw.circle(surface, (255, 180, 230), rect.center, 2)
             return
-
         for color, thickness in (
             (self.WALL_GLOW_COLOR, self.GLOW_THICKNESS),
             (self.WALL_COLOR, self.WALL_THICKNESS)
         ):
             if cell & self.NORTH:
-                pygame.draw.line(surface, color, rect.topleft, rect.topright, thickness)
+                pygame.draw.line(
+                    surface, color, rect.topleft,
+                    rect.topright, thickness
+                )
             if cell & self.EAST:
-                pygame.draw.line(surface, color, rect.topright, rect.bottomright, thickness)
+                pygame.draw.line(
+                    surface, color, rect.topright,
+                    rect.bottomright, thickness
+                )
             if cell & self.SOUTH:
-                pygame.draw.line(surface, color, rect.bottomleft, rect.bottomright, thickness)
+                pygame.draw.line(
+                    surface, color, rect.bottomleft,
+                    rect.bottomright, thickness
+                )
             if cell & self.WEST:
-                pygame.draw.line(surface, color, rect.topleft, rect.bottomleft, thickness)
+                pygame.draw.line(
+                    surface, color, rect.topleft,
+                    rect.bottomleft, thickness
+                )
 
-    def draw(self, level, cell_size: int, offset_x: int, offset_y: int) -> None:
+    def draw(
+            self, level, cell_size: int,
+            offset_x: int, offset_y: int
+    ) -> None:
         """
         يرسم المتاهة على الشاشة بناءً على الإزاحة وحجم الخلية المستلمين من GameScreen
         """
@@ -78,6 +90,5 @@ class DrawMaze:
         if self._cached_level_id != level.level_id:
             self._maze_surface = self._build_maze_surface(level, cell_size)
             self._cached_level_id = level.level_id
-            
 
         self.screen.blit(self._maze_surface, (offset_x, offset_y))

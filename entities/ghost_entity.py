@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field, model_validator
 
 
 class Ghost(BaseModel):
-
     x: int = Field(default=0)
     y: int = Field(default=0)
     spawn_x: int = Field(default=0)
@@ -11,7 +10,6 @@ class Ghost(BaseModel):
     
     direction: str = Field(default="NONE")
     color: tuple[int, int, int] = Field(default=(255, 0, 0))
-
 
     is_scared: bool = Field(default=False)
     is_eaten: bool = Field(default=False)

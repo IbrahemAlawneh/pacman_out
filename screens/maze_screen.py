@@ -3,27 +3,37 @@ from entities import GameEntities
 from draw_element.draw_maze import DrawMaze
 from draw_element.draw_pacman import DrawPacman
 from draw_element.draw_gum import DrawGum
+from .pause_screen import PauseScreen
+
 
 class GameScreen:
     """Handles routing the input and triggering the rendering of the game."""
-    
     def __init__(self, screen: pygame.Surface, config: dict):
         self.screen = screen
         self.config = config
         self.entities = GameEntities(**config)
 
+        self.pause_screen = PauseScreen(self.screen)
+        self.paused = False
         self.maze_draw = DrawMaze(self.screen)
         self.pacman_draw = DrawPacman(self.screen)
         self.gum_draw = DrawGum(self.screen)
         self._calculate_layout()
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
+        if self.paused:
+            action = self.pause_screen.handle_event(event)
+            if action == "resume":
+                self.paused = False
+            elif action in ("back_to_menu", "quit"):
+                return action
+            return None
+
         if event.type == pygame.KEYDOWN:
-
-
             if event.key in (pygame.K_ESCAPE, pygame.K_p):
-                print("pause screen is open")
-                return "back_to_menu"
+                self.paused = True
+                self.pause_screen.open()
+                return None
 
             elif event.key in (pygame.K_F1, pygame.K_F2, pygame.K_F3, pygame.K_F4, pygame.K_F5):
                 cheats = self.config.get("cheats")
@@ -51,43 +61,45 @@ class GameScreen:
 
                     elif event.key == pygame.K_F5:
                         if enable_all or cheats.get("infinite_lives", False):
-                            print("[Cheat] F5 Activated: Pac-Man has infinite lives!")
-
+                            print(
+                                "[Cheat] F5 Activated: "
+                                "Pac-Man has infinite lives!"
+                            )
         return None
 
     def update(self) -> None:
+        if self.paused:
+            return None
+
         pac = self.entities.pacman
         keys = pygame.key.get_pressed()
 
         self._process_input(pac, keys)
-        
         step = self._calculate_speed(pac)
-        
         self._update_pacman_position(pac, step)
-        
         self._check_gum_collisions(pac)
-        self._check_game_state()
-        
-    
+        return self._check_game_state()
+
     def _check_game_state(self) -> None:
         if self.entities.pacman.lives <= 0:
             print("Game Over! All lives lost.")
             return "back_to_menu"
 
-        all_gums_eaten = len(self.entities.gums) > 0 and all(gum.is_eaten for gum in self.entities.gums)
-        
+        all_gums_eaten = (
+            len(self.entities.gums) > 0
+            and all(gum.is_eaten for gum in self.entities.gums)
+        )
+
         if all_gums_eaten:
-            print(f"Level {self.entities.level.level_id} Complete! Moving to next level...")
-            
+            print(
+                f"Level {self.entities.level.level_id} "
+                "Complete! Moving to next level..."
+            )
+
             self.entities.level.next_level()
-            
             self.entities.gum_reset()
-            
             self._calculate_layout()
-            
-            # د. (مستقبلاً) إعادة الأشباح لنقطة البداية
-            # for ghost in self.entities.ghosts:
-            #     ghost.reset()
+        return None
 
     def _process_input(self, pac, keys) -> None:
         if keys[pygame.K_UP] or keys[pygame.K_w]:
@@ -149,13 +161,12 @@ class GameScreen:
 
         for gum in self.entities.gums:
             if not gum.is_eaten and gum.grid_x == pac_grid_x and gum.grid_y == pac_grid_y:
-                
                 gum.is_eaten = True
                 pac.total_points += gum.points
-                
-                print(f"[Action] Gum eaten! Total Points: {pac.total_points}")
-
-                    
+                print(
+                    f"[Action] Gum eaten! Total Points: "
+                    f"{pac.total_points}"
+                )
 
     def _is_path_open(self, grid_x: int, grid_y: int, direction: str) -> bool:
         try:
@@ -171,7 +182,6 @@ class GameScreen:
             return (cell & 4) == 0
         elif direction == "LEFT":
             return (cell & 8) == 0
-            
         return False
 
     def _calculate_layout(self) -> None:
@@ -182,8 +192,8 @@ class GameScreen:
         MAX_W, MAX_H = 1000, 700
         cell_w = MAX_W // grid_width
         cell_h = MAX_H // grid_height
-        
-        self.cell_size = min(cell_w, cell_h, 40) 
+
+        self.cell_size = min(cell_w, cell_h, 40)
 
         maze_width_px = grid_width * self.cell_size
         maze_height_px = grid_height * self.cell_size
@@ -193,7 +203,7 @@ class GameScreen:
 
         center_grid_x = grid_width // 2
         center_grid_y = grid_height // 2
-        
+
         while grid[center_grid_y][center_grid_x] == 15:
                 center_grid_x -= 1
                 center_grid_y -= 1
@@ -201,23 +211,26 @@ class GameScreen:
         pac = self.entities.pacman
         pac.x = center_grid_x * self.cell_size
         pac.y = center_grid_y * self.cell_size
-
-            
-    
         pac.direction = "NONE"
         pac.next_direction = "NONE"
-    
+
     def draw(self) -> None:
         self.screen.fill((0, 0, 0))
 
         self.maze_draw.draw(
-            self.entities.level, self.cell_size, self.offset_x, self.offset_y
+            self.entities.level, self.cell_size,
+            self.offset_x, self.offset_y
         )
-        
+
         self.gum_draw.draw (
-                    self.entities.gums, self.cell_size, self.offset_x, self.offset_y
-                )
-        
-        self.pacman_draw.draw(
-            self.entities.pacman, self.cell_size, self.offset_x, self.offset_y
+            self.entities.gums, self.cell_size,
+            self.offset_x, self.offset_y
         )
+
+        self.pacman_draw.draw(
+            self.entities.pacman, self.cell_size,
+            self.offset_x, self.offset_y
+        )
+
+        if self.paused:
+            self.pause_screen.draw()
