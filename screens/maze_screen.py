@@ -121,7 +121,7 @@ class GameScreen:
         pac_grid_x = int((pac.x + (self.cell_size // 2)) // self.cell_size)
         pac_grid_y = int((pac.y + (self.cell_size // 2)) // self.cell_size)
 
-        max_physical_speed = self.cell_size / 5.0
+        max_physical_speed = self.cell_size / 8.0
 
         for ghost in self.entities.ghosts:
             if ghost.is_dead:
@@ -129,7 +129,7 @@ class GameScreen:
                     ghost.reset(self.entities.level, self.cell_size)
                 continue
 
-            speed_ratio = ghost.speed / 100.0 * 0.8
+            speed_ratio = (ghost.speed / 100.0) * 0.85
             if ghost.is_scared:
                 speed_ratio *= 0.5
             step = max(1, int(max_physical_speed * speed_ratio))
@@ -159,7 +159,6 @@ class GameScreen:
                     pac_grid_y
                 )
 
-            # 5. التنفيذ الأعمى: الحركة الفعلية بالبكسلات بناءً على الاتجاه
             if ghost.direction == "UP":
                 ghost.y -= step
             elif ghost.direction == "DOWN":
@@ -197,6 +196,33 @@ class GameScreen:
         for ghost in self.entities.ghosts:
             ghost.reset(self.entities.level, self.cell_size)
 
+    def _new_level_increase(self) -> None:
+        
+        if self.entities.pacman.pacman_speed < 65:
+            self.entities.pacman.pacman_speed = min(65, self.entities.pacman.pacman_speed + 2)
+
+        for ghost in self.entities.ghosts:
+            if getattr(ghost, 'speed', 40) < 63: 
+                ghost.speed = min(63, ghost.speed + 2)
+
+        hard_count = sum(1 for g in self.entities.ghosts if g.mode == 1 and g.chase_algorithm == 0)
+
+        for ghost in self.entities.ghosts:
+
+            is_easy = (ghost.mode == 0)
+            is_medium = (ghost.mode == 1 and ghost.chase_algorithm == 1)
+
+            if is_easy:
+                ghost.mode = 1
+                ghost.chase_algorithm = 1
+                break
+
+            elif is_medium:
+                if hard_count < 2:
+                    ghost.mode = 1
+                    ghost.chase_algorithm = 0
+                    break
+
     def _check_game_state(self) -> None | str:
         if self.entities.pacman.lives <= 0:
             return "back_to_menu"
@@ -204,9 +230,7 @@ class GameScreen:
         self.all_gums_eaten = len(self.entities.gums) > 0 and all(gum.is_eaten for gum in self.entities.gums)
         if self.all_gums_eaten:
             print(f"Level {self.entities.level.level_id} Complete! Moving to next level...")
-
             self.skip_level()
-            self._calculate_layout()
             for ghost in self.entities.ghosts:
                 ghost.reset(self.entities.level, self.cell_size)
         return None
@@ -222,8 +246,8 @@ class GameScreen:
             pac.next_direction = "RIGHT"
 
     def _calculate_speed(self, pac) -> int:
-        max_physical_speed = self.cell_size / 5.0
-        speed_ratio = pac.pacman_speed / 100.0 
+        max_physical_speed = self.cell_size / 6.5
+        speed_ratio = pac.pacman_speed / 100.0
         return max(1, int(max_physical_speed * speed_ratio))
 
     def _update_pacman_position(self, pac, step: int) -> None:
@@ -300,7 +324,10 @@ class GameScreen:
     def skip_level(self) -> None:
         self.entities.level.next_level()
         self.entities.gum_reset()
+        self._new_level_increase()
         self._calculate_layout()
+        self._reset_positions()
+        
         self.entities.level_max_time = self.init_time + ((self.entities.level.level_id - 1) * 10)
 
     def _load_level_theme(self) -> None:

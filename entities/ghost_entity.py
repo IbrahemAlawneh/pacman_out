@@ -10,7 +10,7 @@ class Ghost(BaseModel):
     spawn_y: int = Field(default=0)
     
     direction: str = Field(default="NONE")
-    color: tuple[int, int, int] = Field(default=(255, 0, 0))
+    color: str = Field(default="orange")
 
     is_scared: bool = Field(default=False)
     is_eaten: bool = Field(default=False)

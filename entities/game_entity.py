@@ -94,10 +94,10 @@ class GameEntities(BaseModel):
             ]
         
         colors = [
-            (255, 0, 0),
-            (255, 184, 255),
-            (0, 255, 255),
-            (255, 184, 82)
+            "orange",
+            "blue",
+            "purple",
+            "green"
             ]
         
         for ghost_index in range(4):

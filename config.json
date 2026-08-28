@@ -16,6 +16,6 @@
     "seed": -1,
 
     # Ghost configuration
-    "ghost_speed": 45,
+    "ghost_speed": 50,
     "ghosts_mode": 1
 }
