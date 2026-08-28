@@ -13,15 +13,6 @@ def main() -> None:
     surface = pygame.display.set_mode((1200, 800))
     pygame.display.set_caption("Pac-Man")
 
-    try:
-        pygame.mixer.music.load("assets/sounds/background_music.ogg")
-        pygame.mixer.music.set_volume(0.3)
-
-        # الرقم -1 يعني أن الموسيقى ستتكرر إلى ما لا نهاية (Loop)
-        pygame.mixer.music.play(-1)
-
-    except pygame.error as e:
-        print(f"[Warning] Could not load background music: {e}")
 
     if len(sys.argv) != 2:
         print(

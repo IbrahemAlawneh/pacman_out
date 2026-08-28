@@ -51,7 +51,7 @@ class InstructionsScreen:
             image = pygame.image.load(
                 str(
                     Path(
-                        "assets/main_menu_images/setting/without_logo_bk.jpg")
+                        "assets/images/setting/without_logo_bk.jpg")
                     )
                 ).convert()
             self.bg = pygame.transform.scale(

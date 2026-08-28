@@ -14,6 +14,7 @@ class ScreenManager:
     def __init__(self, surface: pygame.Surface, config: dict):
         self.surface = surface
         self.config = config
+        self.current_music_path = None
 
         self.menus = {
             "main_menu": MainScreen(self.surface),
@@ -26,10 +27,24 @@ class ScreenManager:
         self.active_screen = self.menus[self.current_screen_name]
         self.clock = pygame.time.Clock()
         self.running = True
+        
+        
+    def play_music(self, music_path: str) -> None:        
+        if self.current_music_path == music_path:
+            return 
+
+        try:
+            pygame.mixer.music.load(music_path)
+            pygame.mixer.music.play(-1)
+            self.current_music_path = music_path
+        except pygame.error as e:
+            print(f"Error loading music {music_path}: {e}")
+
 
     def run(self) -> None:
         """Main game loop
         Runs continuously until the player closes the game"""
+        self.play_music("assets/sounds/background_music.ogg")
         while self.running:
 
             for event in pygame.event.get():
@@ -43,10 +58,8 @@ class ScreenManager:
                     self._handle_action(action)
 
 
-            if hasattr(self.active_screen,"update"):
-                action = self.active_screen.update()
-                if action is not None:
-                    self._handle_action(action)
+            if isinstance(self.active_screen, GameScreen):
+                self.active_screen.update()
 
             self.active_screen.draw()
             pygame.display.flip()
@@ -54,12 +67,15 @@ class ScreenManager:
 
     def _handle_action(self, action: str | None) -> None:
 
+        self.play_music("assets/sounds/background_music.ogg")
+
         if not action:
             return
 
         if action == "quit":
             self.running = False
-
+            
+        
         elif action == "play":
             self.active_screen = GameScreen(self.surface, self.config)
             self.current_screen_name = "play"
@@ -67,6 +83,7 @@ class ScreenManager:
                 "[System] PlayScreen created. "
                 "Game is starting with current config."
             )
+            self.current_music_path = None
 
         elif action == "back_to_menu":
             if self.current_screen_name == "play":

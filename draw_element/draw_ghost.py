@@ -12,7 +12,7 @@ class DrawGhost:
 
         for ghost in ghosts:
 
-            radius = int((cell_size * 0.8) / 2)
+            radius = int((cell_size * 0.7) / 2)
             
 
             center_x = ghost.x + offset_x + (cell_size // 2)

@@ -5,6 +5,8 @@ from draw_element.draw_maze import DrawMaze
 from draw_element.draw_pacman import DrawPacman
 from draw_element.draw_gum import DrawGum
 from draw_element.draw_ghost import DrawGhost
+from draw_element.draw_HUD import DrawHUD
+from draw_element.theme_manager import GAME_THEMES
 from .pause_screen import PauseScreen
 
 
@@ -16,14 +18,32 @@ class GameScreen:
         self.config = config
         self.paused = False
         self.entities = GameEntities(**config)
-
+        self.last_timer_update = pygame.time.get_ticks()
         self.maze_draw = DrawMaze(self.screen)
         self.pacman_draw = DrawPacman(self.screen)
         self.gum_draw = DrawGum(self.screen)
         self.ghosts_draw = DrawGhost(self.screen)
+        self.HUD_draw = DrawHUD("assets/fonts/PressStart2P-Regular.ttf")
         self.pause_screen = PauseScreen(self.screen)
         self.scared_timer_start = 0
+        self.init_time = self.entities.level_max_time
+        self.all_gums_eaten =  False
         self._calculate_layout()
+
+
+
+    def _load_image(
+                self, filename: str, scale_to_screen: bool = False
+        ) -> pygame.Surface | None:
+            filepath = filename
+            try:
+                img = pygame.image.load(str(filepath)).convert_alpha()
+                if scale_to_screen:
+                    img = pygame.transform.scale(img, self.screen.get_size())
+                return img
+            except Exception as e:
+                print(f"[Warning] Could not load {filename}: {e}")
+                return None
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
         if self.paused:
@@ -78,20 +98,21 @@ class GameScreen:
         keys = pygame.key.get_pressed()
 
         self._process_input(pac, keys)
-        
+
         step = self._calculate_speed(pac)
-        
+
         self._update_pacman_position(pac, step)
-        
+
         if self.scared_timer_start > 0:
             if pygame.time.get_ticks() - self.scared_timer_start > self.entities.scared_duration_ms:
                 for ghost in self.entities.ghosts:
                     ghost.is_scared = False
                 self.scared_timer_start = 0
-        
+
         self._update_ghosts_position()
         self._check_gum_collisions(pac)
         self._check_ghost_collisions(pac)
+        self._update_level_timer()
         return self._check_game_state()
 
     def _update_ghosts_position(self) -> None:
@@ -108,7 +129,7 @@ class GameScreen:
                     ghost.reset(self.entities.level, self.cell_size)
                 continue
 
-            speed_ratio = ghost.speed / 100.0
+            speed_ratio = ghost.speed / 100.0 * 0.8
             if ghost.is_scared:
                 speed_ratio *= 0.5
             step = max(1, int(max_physical_speed * speed_ratio))
@@ -167,12 +188,12 @@ class GameScreen:
                     print(f"[Action] Ghost eaten! Total Points: {pac.total_points}")
                 else:
                     pac.lives -= 1
-                    print(f"[Action] Pacman died! Lives remaining: {pac.lives}")
+                    self.entities.level_max_time = self.init_time + ((self.entities.level.level_id - 1) * 10)
                     self._reset_positions()
                     return
 
     def _reset_positions(self) -> None:
-        self._calculate_layout()
+        self.entities.pacman.reset_position(self.cell_size)
         for ghost in self.entities.ghosts:
             ghost.reset(self.entities.level, self.cell_size)
 
@@ -180,12 +201,11 @@ class GameScreen:
         if self.entities.pacman.lives <= 0:
             return "back_to_menu"
 
-        all_gums_eaten = len(self.entities.gums) > 0 and all(gum.is_eaten for gum in self.entities.gums)
-        if all_gums_eaten:
+        self.all_gums_eaten = len(self.entities.gums) > 0 and all(gum.is_eaten for gum in self.entities.gums)
+        if self.all_gums_eaten:
             print(f"Level {self.entities.level.level_id} Complete! Moving to next level...")
 
-            self.entities.level.next_level()
-            self.entities.gum_reset()
+            self.skip_level()
             self._calculate_layout()
             for ghost in self.entities.ghosts:
                 ghost.reset(self.entities.level, self.cell_size)
@@ -280,24 +300,55 @@ class GameScreen:
     def skip_level(self) -> None:
         self.entities.level.next_level()
         self.entities.gum_reset()
-        self._reset_positions()
+        self._calculate_layout()
+        self.entities.level_max_time = self.init_time + ((self.entities.level.level_id - 1) * 10)
+
+    def _load_level_theme(self) -> None:
+        theme_index = (self.entities.level.level_id - 1) % len(GAME_THEMES)
+        current_theme = GAME_THEMES[theme_index]
+
+        self.theme_name = current_theme.name
+
+        self.bk_image = self._load_image(current_theme.bg_path, True)
+        
+        pygame.mixer.music.load(current_theme.music_path)
+        pygame.mixer.music.play(-1)
+
+
+    def _update_level_timer(self) -> None:
+
+        current_time = pygame.time.get_ticks()
+
+        if current_time - self.last_timer_update >= 1000:
+            if self.entities.level_max_time > 0:
+                self.entities.level_max_time -= 1
+
+            self.last_timer_update = current_time
+        if self.entities.level_max_time <= 0:
+            self.entities.pacman.lives -= 1
+            self.entities.level_max_time = self.init_time + ((self.entities.level.level_id - 1) * 10)
+            self._reset_positions()
+
 
     def _calculate_layout(self) -> None:
         grid = self.entities.level.grid
         grid_width = len(grid[0])
         grid_height = len(grid)
 
-        MAX_W, MAX_H = 1000, 700
+        MAX_W, MAX_H = 860, 600
         cell_w = MAX_W // grid_width
         cell_h = MAX_H // grid_height
         
-        self.cell_size = min(cell_w, cell_h, 40) 
+        self.cell_size = min(cell_w, cell_h, 60) 
 
         maze_width_px = grid_width * self.cell_size
         maze_height_px = grid_height * self.cell_size
 
-        self.offset_x = (self.screen.get_width() - maze_width_px) // 2
-        self.offset_y = (self.screen.get_height() - maze_height_px) // 2
+        MARGIN_RIGHT = 40
+        MARGIN_BOTTOM = 60
+
+        self.offset_x = self.screen.get_width() - maze_width_px - MARGIN_RIGHT
+        self.offset_y = self.screen.get_height() - maze_height_px - MARGIN_BOTTOM
 
         center_grid_x = grid_width // 2
         center_grid_y = grid_height // 2
@@ -306,17 +357,18 @@ class GameScreen:
                 center_grid_x -= 1
                 center_grid_y -= 1
 
+        self.entities.pacman.center = center_grid_x, center_grid_y
+
         pac = self.entities.pacman
         pac.x = center_grid_x * self.cell_size
         pac.y = center_grid_y * self.cell_size
 
-            
+
     
         pac.direction = "NONE"
         pac.next_direction = "NONE"
         
         for ghost in self.entities.ghosts:
-            # Fix spawn position to not be inside a wall
             sx, sy = ghost.spawn_x, ghost.spawn_y
             while sx >= 0 and sy >= 0 and sx < grid_width and sy < grid_height and grid[sy][sx] == 15:
                 if sx > grid_width // 2: sx -= 1
@@ -327,14 +379,17 @@ class GameScreen:
             ghost.spawn_y = sy
             ghost.x = ghost.spawn_x * self.cell_size
             ghost.y = ghost.spawn_y * self.cell_size
+        
+        self._load_level_theme()
     
     def draw(self) -> None:
-        self.screen.fill((0, 0, 0))
-
+        self.screen.blit(self.bk_image, (0, 0))
+        
         self.maze_draw.draw(
             self.entities.level, self.cell_size,
-            self.offset_x, self.offset_y
-        )
+            self.offset_x, self.offset_y,
+            self.theme_name
+            )
 
         self.gum_draw.draw (
             self.entities.gums, self.cell_size,
@@ -350,6 +405,13 @@ class GameScreen:
             self.entities.pacman, self.cell_size,
             self.offset_x, self.offset_y
         )
+
+        self.HUD_draw.draw(
+            self.screen, self.entities.pacman.total_points,
+            self.entities.level.level_id,
+            self.entities.pacman.lives,
+            self.entities.level_max_time
+            )
 
         if self.paused:
             self.pause_screen.draw()

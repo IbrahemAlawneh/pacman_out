@@ -16,9 +16,11 @@ class Pacman(BaseModel):
 
     lives: int = Field(default=3)
     initial_lives: int = Field(default=3)
-    
+
     points_per_ghost: int = Field(default=200)
     pacman_speed: int = Field(default=50)
+
+    center: tuple | None = Field(default=None)
 
     @model_validator(mode="before")
     @classmethod
@@ -55,13 +57,10 @@ class Pacman(BaseModel):
         self.initial_lives = self.lives
         return self
 
-    def reset(self) -> None:
-        self.lives = self.initial_lives
-        self.total_points = 0
-        self.name = "unknown"
-        self.x = 0
-        self.y = 0
-        self.direction = "NONE"
-        self.next_direction = "NONE"
-        self.is_alive = True
-        self.is_invincible = False
+    def reset_position(self, cell_size: int) -> None:
+        
+        self.x = self.center[0] * cell_size
+        self.y = self.center[1] * cell_size
+
+        self.direction = None
+        self.next_direction = None

@@ -7,7 +7,7 @@ class HighScoreScreen:
     def __init__(self, screen: pygame.Surface) -> None:
         self.screen = screen
         # Paths & Assets
-        self.assets_path = Path("assets/main_menu_images/setting")
+        self.assets_path = Path("assets/images/setting")
         self.scores_file = Path("configuration_files/high_score.json")
         self.background_image = self._load_image("background_image.jpg")
         self.bar_image = self._load_image("bar_rank.png")

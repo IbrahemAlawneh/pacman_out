@@ -17,7 +17,7 @@ class GameEntities(BaseModel):
     ghost_speed: int = Field(default=50)
     ghosts_mode: int = Field(default=1)
 
-    seed: int = Field(default=42)
+    seed: int= Field(default=-1)
     level_max_time: int = Field(default=90)
     max_level: int = Field(default=10)
 

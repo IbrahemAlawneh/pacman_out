@@ -33,7 +33,7 @@ class SettingScreen:
 
         """here the images path so later if we need
         to change or customieze another theme or animations"""
-        self.assets_path = Path("assets/main_menu_images/setting")
+        self.assets_path = Path("assets/images/setting")
         self.bg_image = self._load_image(
             "without_logo_bk.jpg", scale_to_screen=True
         )
@@ -175,8 +175,8 @@ class SettingScreen:
         limits = {
             "ghost_speed": (40, 100),
             "pacman_speed": (40, 100),
-            "width": (5, 20),
-            "height": (5, 20)
+            "width": (9, 18),
+            "height": (8, 15)
         }
 
         for key, (rect_up, rect_down) in self.num_buttons.items():

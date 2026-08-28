@@ -37,7 +37,7 @@ class MainScreen:
     def __init__(
         self,
         screen: pygame.Surface,
-        assets_path: str | Path = "assets/main_menu_images/main",
+        assets_path: str | Path = "assets/images/main",
     ) -> None:
 
         self.screen = screen
