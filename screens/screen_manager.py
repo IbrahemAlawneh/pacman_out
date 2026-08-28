@@ -59,7 +59,9 @@ class ScreenManager:
 
 
             if isinstance(self.active_screen, GameScreen):
-                self.active_screen.update()
+                action = self.active_screen.update()
+                if action is not None:
+                    self._handle_action(action)
 
             self.active_screen.draw()
             pygame.display.flip()
