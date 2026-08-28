@@ -8,11 +8,12 @@ from draw_element.draw_ghost import DrawGhost
 from draw_element.draw_HUD import DrawHUD
 from draw_element.theme_manager import GAME_THEMES
 from .pause_screen import PauseScreen
+from .game_result import GameResult
 
 
 class GameScreen:
     """Handles routing the input and triggering the rendering of the game."""
-    
+
     def __init__(self, screen: pygame.Surface, config: dict):
         self.screen = screen
         self.config = config
@@ -25,12 +26,11 @@ class GameScreen:
         self.ghosts_draw = DrawGhost(self.screen)
         self.HUD_draw = DrawHUD("assets/fonts/PressStart2P-Regular.ttf")
         self.pause_screen = PauseScreen(self.screen)
+        self.game_result: GameResult | None = None
         self.scared_timer_start = 0
         self.init_time = self.entities.level_max_time
-        self.all_gums_eaten =  False
+        self.all_gums_eaten = False
         self._calculate_layout()
-
-
 
     def _load_image(
                 self, filename: str, scale_to_screen: bool = False
@@ -46,6 +46,9 @@ class GameScreen:
                 return None
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
+        if self.game_result is not None:
+            return self.game_result.handle_event(event)
+
         if self.paused:
             action = self.pause_screen.handle_event(event)
             if action == "resume":
@@ -90,7 +93,15 @@ class GameScreen:
                             )
         return None
 
-    def update(self) -> None:
+    def update(self) -> str | None:
+        if self.game_result is not None:
+            result = self.game_result.update()
+            if result == "next_level":
+                self.skip_level()
+                for ghost in self.entities.ghosts:
+                    ghost.reset(self.entities.level, self.cell_size)
+                self.game_result = None
+            return None
 
         if self.paused:
             return None
@@ -150,11 +161,11 @@ class GameScreen:
                 ghost.y = perfect_y
                 ghost.last_grid_x = ghost_grid_x
                 ghost.last_grid_y = ghost_grid_y
-                
+
                 ghost.direction = ghost.get_next_direction(
-                    ghost_grid_x, 
-                    ghost_grid_y, 
-                    self.entities.level.grid, 
+                    ghost_grid_x,
+                    ghost_grid_y,
+                    self.entities.level.grid,
                     pac_grid_x,
                     pac_grid_y
                 )
@@ -197,12 +208,12 @@ class GameScreen:
             ghost.reset(self.entities.level, self.cell_size)
 
     def _new_level_increase(self) -> None:
-        
+
         if self.entities.pacman.pacman_speed < 65:
             self.entities.pacman.pacman_speed = min(65, self.entities.pacman.pacman_speed + 2)
 
         for ghost in self.entities.ghosts:
-            if getattr(ghost, 'speed', 40) < 63: 
+            if getattr(ghost, 'speed', 40) < 63:
                 ghost.speed = min(63, ghost.speed + 2)
 
         hard_count = sum(1 for g in self.entities.ghosts if g.mode == 1 and g.chase_algorithm == 0)
@@ -225,14 +236,22 @@ class GameScreen:
 
     def _check_game_state(self) -> None | str:
         if self.entities.pacman.lives <= 0:
-            return "back_to_menu"
+            self.game_result = GameResult(
+                self.screen, won=False, score=self.entities.pacman.total_points
+            )
+            return None
 
         self.all_gums_eaten = len(self.entities.gums) > 0 and all(gum.is_eaten for gum in self.entities.gums)
         if self.all_gums_eaten:
-            print(f"Level {self.entities.level.level_id} Complete! Moving to next level...")
-            self.skip_level()
-            for ghost in self.entities.ghosts:
-                ghost.reset(self.entities.level, self.cell_size)
+            if self.entities.level.level_id >= self.entities.level.max_level:
+                self.game_result = GameResult(
+                    self.screen, won=True, score=self.entities.pacman.total_points
+                )
+            else:
+                self.game_result = GameResult(
+                    self.screen, won=False, score=0,
+                    next_level=self.entities.level.level_id + 1
+                )
         return None
 
     def _process_input(self, pac, keys) -> None:
@@ -261,7 +280,7 @@ class GameScreen:
 
         if pac.next_direction != "NONE" and pac.next_direction != pac.direction:
             if self._is_path_open(grid_x, grid_y, pac.next_direction):
-                tolerance = step * 2 
+                tolerance = step * 2
                 if abs(pac.x - perfect_x) <= tolerance and abs(pac.y - perfect_y) <= tolerance:
                     pac.x = perfect_x
                     pac.y = perfect_y
@@ -327,7 +346,7 @@ class GameScreen:
         self._new_level_increase()
         self._calculate_layout()
         self._reset_positions()
-        
+
         self.entities.level_max_time = self.init_time + ((self.entities.level.level_id - 1) * 10)
 
     def _load_level_theme(self) -> None:
@@ -337,10 +356,9 @@ class GameScreen:
         self.theme_name = current_theme.name
 
         self.bk_image = self._load_image(current_theme.bg_path, True)
-        
+
         pygame.mixer.music.load(current_theme.music_path)
         pygame.mixer.music.play(-1)
-
 
     def _update_level_timer(self) -> None:
 
@@ -356,7 +374,6 @@ class GameScreen:
             self.entities.level_max_time = self.init_time + ((self.entities.level.level_id - 1) * 10)
             self._reset_positions()
 
-
     def _calculate_layout(self) -> None:
         grid = self.entities.level.grid
         grid_width = len(grid[0])
@@ -365,8 +382,8 @@ class GameScreen:
         MAX_W, MAX_H = 860, 600
         cell_w = MAX_W // grid_width
         cell_h = MAX_H // grid_height
-        
-        self.cell_size = min(cell_w, cell_h, 60) 
+
+        self.cell_size = min(cell_w, cell_h, 60)
 
         maze_width_px = grid_width * self.cell_size
         maze_height_px = grid_height * self.cell_size
@@ -379,7 +396,7 @@ class GameScreen:
 
         center_grid_x = grid_width // 2
         center_grid_y = grid_height // 2
-        
+
         while grid[center_grid_y][center_grid_x] == 15:
                 center_grid_x -= 1
                 center_grid_y -= 1
@@ -390,11 +407,9 @@ class GameScreen:
         pac.x = center_grid_x * self.cell_size
         pac.y = center_grid_y * self.cell_size
 
-
-    
         pac.direction = "NONE"
         pac.next_direction = "NONE"
-        
+
         for ghost in self.entities.ghosts:
             sx, sy = ghost.spawn_x, ghost.spawn_y
             while sx >= 0 and sy >= 0 and sx < grid_width and sy < grid_height and grid[sy][sx] == 15:
@@ -406,12 +421,12 @@ class GameScreen:
             ghost.spawn_y = sy
             ghost.x = ghost.spawn_x * self.cell_size
             ghost.y = ghost.spawn_y * self.cell_size
-        
+
         self._load_level_theme()
-    
+
     def draw(self) -> None:
         self.screen.blit(self.bk_image, (0, 0))
-        
+
         self.maze_draw.draw(
             self.entities.level, self.cell_size,
             self.offset_x, self.offset_y,
@@ -422,7 +437,7 @@ class GameScreen:
             self.entities.gums, self.cell_size,
             self.offset_x, self.offset_y
         )
-        
+
         self.ghosts_draw.draw (
             self.entities.ghosts, self.cell_size,
             self.offset_x, self.offset_y
@@ -440,5 +455,7 @@ class GameScreen:
             self.entities.level_max_time
             )
 
-        if self.paused:
+        if self.game_result is not None:
+            self.game_result.draw()
+        elif self.paused:
             self.pause_screen.draw()
