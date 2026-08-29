@@ -3,7 +3,7 @@ from pathlib import Path
 import pygame
 
 class GameResult:
-
+    SOURCE_PATH ="J"
     OVERLAY, PANEL_FILL = (4, 7, 22, 175), (13, 18, 46, 190)
     CYAN, PINK, GOLD, RED = (86, 224, 255), (224, 104, 255), (255, 202, 86), (255, 65, 75)
     WHITE, MUTED, DIM = (239, 244, 255), (148, 166, 205), (63, 81, 132)
@@ -20,8 +20,7 @@ class GameResult:
         self.fonts["bold"].set_bold(True)
 
         scores = [s.get("score", 0) for s in self._load_scores()]
-        lowest_score = min(scores) if scores else 0
-        
+        lowest_score = min(scores) if len(scores) >= 10 else -1
         self.qualifies = not next_level and self.score > lowest_score
         self.stage = "transition" if next_level else "enter_name" if self.qualifies else "result"
 
