@@ -2,14 +2,14 @@ import json
 from pathlib import Path
 import pygame
 
-
 class GameResult:
-    SCORES_FILE = Path("configuration_files/high_score.json")
+
     OVERLAY, PANEL_FILL = (4, 7, 22, 175), (13, 18, 46, 190)
     CYAN, PINK, GOLD, RED = (86, 224, 255), (224, 104, 255), (255, 202, 86), (255, 65, 75)
     WHITE, MUTED, DIM = (239, 244, 255), (148, 166, 205), (63, 81, 132)
 
-    def __init__(self, screen: pygame.Surface, won: bool, score: int, next_level: int | None = None) -> None:
+    def __init__(self, screen: pygame.Surface, won: bool, score: int, next_level: int | None = None, file_name = "high_score.json") -> None:
+        self.source_path = Path("configuration_files") / file_name
         self.screen = screen
         self.won, self.score, self.next_level = won, score, next_level
         self.started_at, self.name_input, self.saved_message = pygame.time.get_ticks(), "", ""
@@ -27,18 +27,18 @@ class GameResult:
 
         cx, y0 = screen.get_width() // 2, screen.get_height() // 2 + 35
         self.btns = [{"text": t, "action": a, "rect": pygame.Rect(cx - 170, y0 + i * 70, 340, 58)} 
-                     for i, (t, a) in enumerate([("PLAY AGAIN", "play"), ("MAIN MENU", "back_to_menu")])]
+                    for i, (t, a) in enumerate([("PLAY AGAIN", "play"), ("MAIN MENU", "back_to_menu")])]
         self.selected = 0
 
     def _load_scores(self) -> list[dict]:
-        try: return json.loads(self.SCORES_FILE.read_text())
+        try: return json.loads(self.source_path.read_text())
         except Exception: return []
 
     def _save_score(self, name: str) -> None:
         scores = sorted(self._load_scores() + [{"name": name or "unknown", "score": self.score}], 
                         key=lambda s: s.get("score", 0), reverse=True)[:10]
-        self.SCORES_FILE.parent.mkdir(parents=True, exist_ok=True)
-        self.SCORES_FILE.write_text(json.dumps(scores, indent=2))
+        self.source_path.parent.mkdir(parents=True, exist_ok=True)
+        self.source_path.write_text(json.dumps(scores, indent=2))
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
         if self.stage == "transition": return None

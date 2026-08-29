@@ -2,13 +2,12 @@ import json
 from pathlib import Path
 import pygame
 
-
 class HighScoreScreen:
-    def __init__(self, screen: pygame.Surface) -> None:
+    def __init__(self, screen: pygame.Surface, file_name) -> None:
         self.screen = screen
         # Paths & Assets
+        self.scores_file = Path("configuration_files") / file_name
         self.assets_path = Path("assets/images/setting")
-        self.scores_file = Path("configuration_files/high_score.json")
         self.background_image = self._load_image("background_image.jpg")
         self.bar_image = self._load_image("bar_rank.png")
 
@@ -159,6 +158,7 @@ class HighScoreScreen:
         return None
 
     def draw(self) -> None:
+        self._load_high_scores()
         if self.background_image:
             self.screen.blit(self.background_image, (0, 0))
         self._draw_header()

@@ -1,7 +1,6 @@
 {
     
     # General game and highscore configuration
-    "highscore_filename": "highscores.json",
     "level_max_time": 90,
     "max_level": 20,
     "width": 20,

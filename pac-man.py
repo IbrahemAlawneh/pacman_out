@@ -1,9 +1,7 @@
 import sys
 import pygame
 from configuration_files import load_config
-# from entities import GameEntities
 from screens import ScreenManager
-
 
 def main() -> None:
     """Program entry point."""
@@ -32,9 +30,7 @@ def main() -> None:
         return
 
     config = load_config(config_filename)
-
     mang = ScreenManager(surface, config)
-
     mang.run()
 
 

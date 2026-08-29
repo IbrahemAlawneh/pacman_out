@@ -18,6 +18,7 @@ class GameScreen:
         self.screen = screen
         self.config = config
         self.paused = False
+        self.high_score = config.get("highscore_filename", "high_score.json")
         self.entities = GameEntities(**config)
         self.last_timer_update = pygame.time.get_ticks()
         self.maze_draw = DrawMaze(self.screen)
@@ -237,7 +238,8 @@ class GameScreen:
     def _check_game_state(self) -> None | str:
         if self.entities.pacman.lives <= 0:
             self.game_result = GameResult(
-                self.screen, won=False, score=self.entities.pacman.total_points
+                self.screen, won=False, score=self.entities.pacman.total_points,
+                file_name= self.high_score
             )
             return None
 
@@ -245,12 +247,14 @@ class GameScreen:
         if self.all_gums_eaten:
             if self.entities.level.level_id >= self.entities.level.max_level:
                 self.game_result = GameResult(
-                    self.screen, won=True, score=self.entities.pacman.total_points
+                    self.screen, won=True, score=self.entities.pacman.total_points,
+                    file_name= self.high_score
                 )
             else:
                 self.game_result = GameResult(
                     self.screen, won=False, score=0,
-                    next_level=self.entities.level.level_id + 1
+                    next_level=self.entities.level.level_id + 1,
+                    file_name= self.high_score
                 )
         return None
 

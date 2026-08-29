@@ -20,7 +20,7 @@ class ScreenManager:
             "main_menu": MainScreen(self.surface),
             "settings": SettingScreen(self.surface, self.config),
             "instructions": InstructionsScreen(self.surface, self.config),
-            "high_scores": HighScoreScreen(self.surface),
+            "high_scores": HighScoreScreen(self.surface, self.config.get("highscore_filename", "high_score.json")),
         }
 
         self.current_screen_name = "main_menu"
@@ -63,9 +63,13 @@ class ScreenManager:
                 if action is not None:
                     self._handle_action(action)
 
+
             self.active_screen.draw()
             pygame.display.flip()
-            self.clock.tick(60)
+            if isinstance(self.active_screen, InstructionsScreen):
+                self.clock.tick(1)
+            else:
+                self.clock.tick(60)
 
     def _handle_action(self, action: str | None) -> None:
 
