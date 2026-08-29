@@ -93,7 +93,7 @@ class GameResult:
             
         elif self.stage == "enter_name":
             p = self._panel(480, 300, self.GOLD)
-            self._text("NEW HIGH SCORE!", (cx, p.y + 55), 56, self.GOLD)
+            self._text("YOUR SCORE IN TOP 10!", (cx, p.y + 55), 30, self.GOLD)
             self._text(f"SCORE: {self.score}", (cx, p.y + 105), 30)
             box = pygame.Rect(0, 0, 320, 50); box.center = (cx, p.y + 175)
             pygame.draw.rect(self.screen, (*self.WHITE, 30), box, border_radius=10)

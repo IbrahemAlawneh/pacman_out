@@ -235,6 +235,7 @@ class Ghost(BaseModel):
 
     def get_next_direction(self, grid_x: int, grid_y: int, grid: list[list[int]], pac_x: int, pac_y: int) -> str:
         
+
         valid_moves = self._get_valid_moves(grid_x, grid_y, grid)
         
         if not valid_moves:
@@ -253,6 +254,9 @@ class Ghost(BaseModel):
                 return self._get_euclidean_chase_direction(valid_moves, grid_x, grid_y, pac_x, pac_y)
             
         return random.choice(valid_moves)
+
+    def freeze(self) -> bool:
+        self.is_frozen = not self.is_frozen
 
     def reset(self, level: Any, cell_size: int) -> None:
         max_x = len(level.grid[0]) - 1

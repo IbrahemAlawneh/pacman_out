@@ -31,6 +31,8 @@ class GameScreen:
         self.scared_timer_start = 0
         self.init_time = self.entities.level_max_time
         self.all_gums_eaten = False
+        self.speed_on = False
+        self.is_infinite = False
         self._calculate_layout()
 
     def _load_image(
@@ -47,6 +49,8 @@ class GameScreen:
                 return None
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
+
+
         if self.game_result is not None:
             return self.game_result.handle_event(event)
 
@@ -71,27 +75,33 @@ class GameScreen:
 
                     if event.key == pygame.K_F1:
                         if enable_all or cheats.get("level_skip", False):
-                            print("[Cheat] F1 Activated: Level Skipped!")
                             self.skip_level()
 
                     elif event.key == pygame.K_F2:
                         if enable_all or cheats.get("ghost_freeze", False):
-                            print("[Cheat] F2 Activated: Ghosts Frozen!")
+                            self._cheat_freeze()
+                            
 
                     elif event.key == pygame.K_F3:
                         if enable_all or cheats.get("extra_life", False):
-                            print("[Cheat] F3 Activated: Extra Life Added!")
+                            self.entities.pacman.lives += 1
 
                     elif event.key == pygame.K_F4:
                         if enable_all or cheats.get("speed_boost", False):
-                            print("[Cheat] F4 Activated: Speed Boost!")
+                            if not self.speed_on:
+                                self.entities.pacman.pacman_speed += 20
+                                self.speed_on = True
+                            else:
+                                self.entities.pacman.pacman_speed -= 20
+                                self.speed_on = False
 
                     elif event.key == pygame.K_F5:
                         if enable_all or cheats.get("infinite_lives", False):
-                            print(
-                                "[Cheat] F5 Activated: "
-                                "Pac-Man has infinite lives!"
-                            )
+                            if not self.is_infinite:
+                                self.is_infinite = True
+                            else:
+                                self.is_infinite = False
+
         return None
 
     def update(self) -> str | None:
@@ -127,6 +137,12 @@ class GameScreen:
         self._update_level_timer()
         return self._check_game_state()
 
+
+    def _cheat_freeze(self):
+        for g in self.entities.ghosts:
+            g.freeze()
+
+
     def _update_ghosts_position(self) -> None:
 
         pac = self.entities.pacman
@@ -136,6 +152,8 @@ class GameScreen:
         max_physical_speed = self.cell_size / 8.0
 
         for ghost in self.entities.ghosts:
+            if ghost.is_frozen:
+                return
             if ghost.is_dead:
                 if pygame.time.get_ticks() - ghost.respawn_timer_start > self.entities.ghost_respawn_ms:
                     ghost.reset(self.entities.level, self.cell_size)
@@ -197,6 +215,8 @@ class GameScreen:
                     ghost.respawn_timer_start = pygame.time.get_ticks()
                     pac.total_points += pac.points_per_ghost
                     print(f"[Action] Ghost eaten! Total Points: {pac.total_points}")
+                elif self.is_infinite:
+                    return
                 else:
                     pac.lives -= 1
                     self.entities.level_max_time = self.init_time + ((self.entities.level.level_id - 1) * 10)
@@ -456,7 +476,10 @@ class GameScreen:
             self.screen, self.entities.pacman.total_points,
             self.entities.level.level_id,
             self.entities.pacman.lives,
-            self.entities.level_max_time
+            self.entities.level_max_time,
+            self.entities.ghosts[0].is_frozen,
+            self.is_infinite,
+            self.speed_on
             )
 
         if self.game_result is not None:

@@ -8,7 +8,7 @@
     "height": 20,
 
     # Pac-Man / player configuration
-    "lives": 3,
+    "lives": 1,
     "points_pes_pacgum": 40,
     "points_per_super_pacgum": 20,
     "points_per_ghost": 80,
