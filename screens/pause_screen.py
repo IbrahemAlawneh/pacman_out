@@ -1,9 +1,9 @@
 import pygame
+from typing import Any
 
 
 class PauseScreen:
     """Transparent pause menu and How to Play screen."""
-
     MENU, HELP = "menu", "help"
     OVERLAY = (4, 7, 22, 145)
     PANEL = (13, 18, 46, 245)
@@ -71,7 +71,7 @@ class PauseScreen:
                     return self._activate(i)
         return None
 
-    def _activate(self, index: int) -> str | None:
+    def _activate(self, index: int) -> Any | None:
         """Run the selected action."""
         action = self.buttons[index]["action"]
         if action == "instructions":
@@ -94,9 +94,8 @@ class PauseScreen:
 
     def _panel(
             self, rect: pygame.Rect, border: tuple[int, int, int]
-        ) -> None:
+    ) -> None:
         """Draw a transparent rounded panel."""
-
         layer = pygame.Surface(rect.size, pygame.SRCALPHA)
         pygame.draw.rect(
             layer, self.PANEL, layer.get_rect(), border_radius=22
@@ -106,15 +105,16 @@ class PauseScreen:
 
     def draw(self) -> None:
         """Draw the overlay and the current page."""
-
         overlay = pygame.Surface(self.surface.get_size(), pygame.SRCALPHA)
         overlay.fill(self.OVERLAY)
         self.surface.blit(overlay, (0, 0))
         self._draw_help() if self.mode == self.HELP else self._draw_menu()
 
-    def _draw_button(self, rect: pygame.Rect, label: str, active: bool) -> None:
+    def _draw_button(
+            self, rect: pygame.Rect, label: str,
+            active: bool
+    ) -> None:
         """Draw the original metallic button with slight transparency."""
-
         top, bottom, border = self.PURPLE_BTN if active else self.STEEL_BTN
         layer = pygame.Surface(rect.size, pygame.SRCALPHA)
         for y in range(rect.height):
@@ -123,7 +123,6 @@ class PauseScreen:
                 int(top[i] + (bottom[i] - top[i]) * ratio) for i in range(3)
             )
             pygame.draw.line(layer, (*color, 150), (0, y), (rect.width, y))
-
         mask = pygame.Surface(rect.size, pygame.SRCALPHA)
         pygame.draw.rect(
             mask, (255, 255, 255, 255), mask.get_rect(), border_radius=32

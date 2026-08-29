@@ -1,5 +1,6 @@
 from pathlib import Path
 import pygame
+from typing import Any
 
 
 class MainScreen:
@@ -123,28 +124,22 @@ class MainScreen:
             button["rect"].centerx = self.BUTTON_CENTER_X
         self.selected_button_index = 0
 
-    # Input & Navigation
-    def handle_event(self, event: pygame.event.Event) -> str | None:
+    def handle_event(self, event: pygame.event.Event) -> Any | None:
         if not self.animation_finished:
             return None
 
         previous_index = self.selected_button_index
 
-        # Keyboard
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_UP, pygame.K_w):
                 self._select_previous_button()
-
             elif event.key in (pygame.K_DOWN, pygame.K_s):
                 self._select_next_button()
-
             elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                 return self._activate_selected_button()
-
             elif event.key == pygame.K_ESCAPE:
                 return "quit"
 
-        # Mouse
         elif event.type == pygame.MOUSEMOTION:
             mouse_position = event.pos
             for index, button in enumerate(self.buttons):
@@ -159,8 +154,6 @@ class MainScreen:
                     if button["rect"].collidepoint(mouse_position):
                         self.selected_button_index = index
                         return self._activate_selected_button()
-
-        # Play Hover Sound
         if (
             self.selected_button_index != previous_index
             and self.hover_sound
@@ -179,7 +172,7 @@ class MainScreen:
             self.selected_button_index - 1
         ) % len(self.buttons)
 
-    def _activate_selected_button(self) -> str:
+    def _activate_selected_button(self) -> Any:
         if self.click_sound:
             self.click_sound.play()
         return self.buttons[self.selected_button_index]["action"]

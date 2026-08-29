@@ -17,15 +17,13 @@ class Level(BaseModel):
     initial_height: int = Field(default=20)
 
     maze: Any = Field(default=None)
-    
-    size_increment: int= Field(default=1)
+    size_increment: int = Field(default=1)
 
     @model_validator(mode="before")
     @classmethod
     def validate_input(cls, data: Any) -> dict[str, Any]:
         """
         Safely validate Level configuration.
-
         Invalid or missing values are replaced with safe defaults.
         """
         if not isinstance(data, dict):
@@ -71,7 +69,6 @@ class Level(BaseModel):
                     "Using default value: 90."
                 )
                 max_time = 90
-
         except (ValueError, TypeError):
             print(
                 "[Warning] Invalid level_max_time. "
@@ -106,7 +103,6 @@ class Level(BaseModel):
         Validate relationships between Level attributes
         and initialize the first maze.
         """
-
         if self.width > 18 or self.width < 9:
             self.width = 15
         if self.height > 15 or self.height < 8:
@@ -114,7 +110,7 @@ class Level(BaseModel):
 
         self.initial_width = self.width
         self.initial_height = self.height
-        
+
         self.size_increment = 1
 
         self.maze: MazeGenerator = MazeGenerator(
@@ -126,7 +122,6 @@ class Level(BaseModel):
     def next_level(self) -> bool:
         """
         Move to the next level.
-
         Returns:
             True  -> next level was successfully created.
             False -> current level is already the maximum level.
@@ -139,17 +134,15 @@ class Level(BaseModel):
             return False
 
         self.level_id += 1
-        
+
         self.width = (
             self.initial_width
             + (self.level_id - 1)
         )
-
         self.height = (
             self.initial_height
             + (self.level_id - 1) - 1
         )
-
         self.maze = MazeGenerator(
             size=(self.width, self.height),
             seed=self.seed

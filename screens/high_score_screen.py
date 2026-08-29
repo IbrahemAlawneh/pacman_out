@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 import pygame
 
+
 class HighScoreScreen:
     def __init__(self, screen: pygame.Surface, file_name) -> None:
         self.screen = screen
@@ -66,7 +67,7 @@ class HighScoreScreen:
     def _load_high_scores(self) -> None:
 
         try:
-            with open(self.scores_file, "r" , encoding="utf-8") as file:
+            with open(self.scores_file, "r", encoding="utf-8") as file:
                 data = json.load(file)
                 self.high_scores = sorted(
                     data, key=lambda x: x.get("score", 0), reverse=True

@@ -68,19 +68,17 @@ class SettingScreen:
             print(f"[Warning] Could not load {filename}: {e}")
             return None
 
-    """"here is the postions of sounds buttons and config setting"""
     def _setup_hitboxes(self) -> None:
+        """"here is the postions of sounds buttons and config setting"""
         self.music_buttons = [
             pygame.Rect(200, 460, 50, 50),
             pygame.Rect(270, 460, 50, 50),
             pygame.Rect(340, 460, 50, 50)
         ]
-
         self.slider_music_rect = pygame.Rect(180, 280, 250, 10)
         self.slider_sfx_rect = pygame.Rect(180, 380, 250, 10)
         self.is_dragging_music = False
         self.is_dragging_sfx = False
-
         self.num_buttons = {
             "ghost_speed": (
                 pygame.Rect(240, 590, 25, 20),
@@ -99,7 +97,6 @@ class SettingScreen:
                 pygame.Rect(410, 710, 25, 20)
             )
         }
-
         self.cheat_keys = [
             "enable_all", "level_skip", "ghost_freeze",
             "extra_life", "speed_boost", "infinite_lives"
@@ -113,21 +110,16 @@ class SettingScreen:
     def handle_event(self, event: pygame.event.Event) -> str | None:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             return "back_to_menu"
-
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             pos = event.pos
-
             for i, rect in enumerate(self.music_buttons):
                 if rect.collidepoint(pos):
                     self._play_music(i)
-
             if self.slider_music_rect.inflate(20, 30).collidepoint(pos):
                 self.is_dragging_music = True
             elif self.slider_sfx_rect.inflate(20, 30).collidepoint(pos):
                 self.is_dragging_sfx = True
-
             self._handle_number_clicks(pos)
-
             self._handle_cheat_clicks(pos)
 
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
@@ -135,12 +127,10 @@ class SettingScreen:
             self.is_dragging_sfx = False
 
         elif event.type == pygame.MOUSEMOTION:
-
             if self.is_dragging_music:
                 self._update_slider("music", event.pos[0])
             elif self.is_dragging_sfx:
                 self._update_slider("sfx", event.pos[0])
-
         return None
 
     def _play_music(self, index: int) -> None:
@@ -159,7 +149,6 @@ class SettingScreen:
             if slider_type == "music"
             else self.slider_sfx_rect
         )
-
         clamped_x = max(rect.left, min(mouse_x, rect.right))
         ratio = (clamped_x - rect.left) / rect.width
 
@@ -192,15 +181,12 @@ class SettingScreen:
 
         for key, rect in self.cheat_toggles.items():
             if rect.collidepoint(pos):
-
                 if key == "enable_all":
                     cheats["enable_all"] = not cheats["enable_all"]
-
                     if cheats["enable_all"]:
                         for k in cheats.keys():
                             cheats[k] = True
                 else:
-
                     if not cheats["enable_all"]:
                         cheats[key] = not cheats[key]
 
@@ -218,13 +204,11 @@ class SettingScreen:
             self.screen, self.COLOR_ACCENT, panel_rect,
             width=3, border_radius=20
         )
-
         if self.logo:
             scaled_logo = pygame.transform.smoothscale(
                 self.logo, (250, 250)
             )
             self.screen.blit(scaled_logo, (170, 30))
-
         self._draw_audio_section()
         self._draw_music_buttons()
         self._draw_number_inputs()
@@ -239,7 +223,6 @@ class SettingScreen:
         )
         self.screen.blit(lbl_music, (180, 240))
         self.screen.blit(lbl_sfx, (180, 340))
-
         if self.speaker_icon:
             scaled_speaker = pygame.transform.smoothscale(
                 self.speaker_icon, (30, 30)
@@ -267,7 +250,6 @@ class SettingScreen:
                 self.slider_music_rect.centery
             ), 10
         )
-
         pygame.draw.rect(
             self.screen, self.COLOR_SLIDER_BG,
             self.slider_sfx_rect, border_radius=5
@@ -293,7 +275,6 @@ class SettingScreen:
     def _draw_music_buttons(self) -> None:
         title = self.font_value.render("CHANGE MUSIC", True, self.COLOR_TEXT)
         self.screen.blit(title, (205, 430))
-
         if self.music_btn:
             scaled_btn = pygame.transform.smoothscale(self.music_btn, (50, 50))
             for rect in self.music_buttons:
@@ -307,7 +288,6 @@ class SettingScreen:
             ("MAZE WIDTH", "width", 140, 660),
             ("MAZE HEIGHT", "height", 310, 660)
         ]
-
         for label_text, key, x, y in settings:
 
             lbl = (
@@ -321,9 +301,6 @@ class SettingScreen:
                 self.screen, (255, 255, 255),
                 box_rect, border_radius=5
             )
-
-            
-            
             if key in ("ghost_speed", "pacman_speed"):
                 val_text = self.font_value.render(
                     str(max(40, min(self.config[key], 100))), True, (0, 0, 0)
@@ -332,7 +309,7 @@ class SettingScreen:
                 val_text = self.font_value.render(
                     str(max(5, min(self.config[key], 20))), True, (0, 0, 0)
                     )
-                
+
             self.screen.blit(val_text, (x + 10, y + 38))
 
             if self.arrow_up and self.arrow_down:
@@ -357,15 +334,12 @@ class SettingScreen:
         self.screen.blit(subtitle, (600, 210))
         cheats = self.config["cheats"]
         for key, rect in self.cheat_toggles.items():
-
             is_on = cheats[key]
-
             text_color = self.COLOR_TEXT
             if not is_on and cheats["enable_all"] and key != "enable_all":
                 text_color = (100, 100, 100)
             label_text = key.replace("_", " ").upper()
             lbl = self.font_value.render(label_text, True, text_color)
-
             if is_on and self.toggle_on:
                 scaled_toggle = pygame.transform.smoothscale(
                     self.toggle_on, (80, 40)
@@ -377,7 +351,6 @@ class SettingScreen:
                 )
                 self.screen.blit(scaled_toggle, rect.topleft)
             else:
-
                 pygame.draw.rect(
                     self.screen, self.COLOR_ACCENT if is_on else (
                         100, 100, 100), rect, border_radius=20

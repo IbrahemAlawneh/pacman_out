@@ -3,6 +3,7 @@ import pygame
 from configuration_files import load_config
 from screens import ScreenManager
 
+
 def main() -> None:
     """Program entry point."""
     # make surface for all screens
@@ -10,7 +11,6 @@ def main() -> None:
     pygame.mixer.init()
     surface = pygame.display.set_mode((1200, 800))
     pygame.display.set_caption("Pac-Man")
-
 
     if len(sys.argv) != 2:
         print(

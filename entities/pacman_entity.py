@@ -1,13 +1,13 @@
 from typing import Any
 from pydantic import BaseModel, Field, model_validator
 
+
 class Pacman(BaseModel):
-    
     x: int = Field(default=0)
     y: int = Field(default=0)
     direction: str = Field(default="NONE")
     next_direction: str = Field(default="NONE")
-    
+
     is_alive: bool = Field(default=True)
     is_invincible: bool = Field(default=False)
 
@@ -19,7 +19,6 @@ class Pacman(BaseModel):
 
     points_per_ghost: int = Field(default=200)
     pacman_speed: int = Field(default=50)
-
     center: tuple | None = Field(default=None)
 
     @model_validator(mode="before")
@@ -36,9 +35,9 @@ class Pacman(BaseModel):
         }
 
         for key, default_value in defaults.items():
-            if key not in data: continue
+            if key not in data:
+                continue
             value = data[key]
-            
             try:
                 value = int(value)
                 if value <= 0:
@@ -47,7 +46,6 @@ class Pacman(BaseModel):
                     safe_data[key] = value
             except (ValueError, TypeError):
                 safe_data[key] = default_value
-                
         return safe_data
 
     @model_validator(mode="after")
@@ -57,8 +55,7 @@ class Pacman(BaseModel):
         self.initial_lives = self.lives
         return self
 
-    def reset_position(self, cell_size: int) -> None:
-        
+    def reset_position(self, cell_size: tuple[Any, ...]) -> None:
         self.x = self.center[0] * cell_size
         self.y = self.center[1] * cell_size
 

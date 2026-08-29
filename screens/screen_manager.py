@@ -1,6 +1,4 @@
 import pygame
-from entities import GameEntities
-from enum import Enum
 from .high_score_screen import HighScoreScreen
 from .instructions_screen import InstructionsScreen
 from .main_screen import MainScreen
@@ -20,26 +18,27 @@ class ScreenManager:
             "main_menu": MainScreen(self.surface),
             "settings": SettingScreen(self.surface, self.config),
             "instructions": InstructionsScreen(self.surface, self.config),
-            "high_scores": HighScoreScreen(self.surface, self.config.get("highscore_filename", "high_score.json")),
+            "high_scores": HighScoreScreen(
+                self.surface, self.config.get(
+                    "highscore_filename", "high_score.json"
+                )
+            ),
         }
 
         self.current_screen_name = "main_menu"
         self.active_screen = self.menus[self.current_screen_name]
         self.clock = pygame.time.Clock()
         self.running = True
-        
-        
-    def play_music(self, music_path: str) -> None:        
-        if self.current_music_path == music_path:
-            return 
 
+    def play_music(self, music_path: str) -> None:
+        if self.current_music_path == music_path:
+            return
         try:
             pygame.mixer.music.load(music_path)
             pygame.mixer.music.play(-1)
             self.current_music_path = music_path
         except pygame.error as e:
             print(f"Error loading music {music_path}: {e}")
-
 
     def run(self) -> None:
         """Main game loop
@@ -51,18 +50,14 @@ class ScreenManager:
                 if event.type == pygame.QUIT:
                     self.running = False
                     continue
-
                 action = self.active_screen.handle_event(event)
-
                 if action is not None:
                     self._handle_action(action)
-
 
             if isinstance(self.active_screen, GameScreen):
                 action = self.active_screen.update()
                 if action is not None:
                     self._handle_action(action)
-
 
             self.active_screen.draw()
             pygame.display.flip()
@@ -72,16 +67,12 @@ class ScreenManager:
                 self.clock.tick(60)
 
     def _handle_action(self, action: str | None) -> None:
-
         self.play_music("assets/sounds/background_music.ogg")
-
         if not action:
             return
-
         if action == "quit":
             self.running = False
-            
-        
+
         elif action == "play":
             self.active_screen = GameScreen(self.surface, self.config)
             self.current_screen_name = "play"
@@ -97,10 +88,8 @@ class ScreenManager:
                     "[System] Exiting game. "
                     "PlayScreen & GameEntities destroyed (RAM Freed)."
                 )
-
             self.active_screen = self.menus["main_menu"]
             self.current_screen_name = "main_menu"
-
         elif action == "settings":
             self.active_screen = self.menus["settings"]
             self.current_screen_name = "settings"
