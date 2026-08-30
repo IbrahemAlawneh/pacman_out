@@ -71,28 +71,70 @@ make lint
 ├── config.json
 ├── pyproject.toml
 ├── Makefile
-├── .gitignore
+├── test.py
 ├── README.md
 │
-├── entities/
-│   ├── __init__.py
-│   ├── game_entities.py
-│   ├── pacman.py
-│   └── ghost.py
+├── assets/
+│   ├── fonts/
+│   │   └── PressStart2P-Regular.ttf
+│   ├── images/
+│   │   ├── charater/     # (Character sprite frames)
+│   │   ├── main/         # (Main menu assets)
+│   │   ├── setting/      # (Settings UI assets)
+│   │   ├── themes/       # (HUD and theme buttons)
+│   │   └── walls/        # (Wall textures)
+│   └── sounds/
+│       ├── themes/
+│       │   ├── classic.ogg
+│       │   ├── desert.ogg
+│       │   └── neon.ogg
+│       ├── background_music.ogg
+│       ├── click.wav
+│       ├── gameover.wav
+│       └── hover.wav
 │
 ├── configuration_files/
 │   ├── __init__.py
-│   ├── config_parser.py
-│   └── level.py
+│   ├── config_validation.py
+│   └── high_score.json
+│
+├── draw_element/
+│   ├── __init__.py
+│   ├── draw_ghost.py
+│   ├── draw_gum.py
+│   ├── draw_HUD.py
+│   ├── draw_maze.py
+│   ├── draw_pacman.py
+│   └── theme_manager.py
+│
+├── entities/
+│   ├── __init__.py
+│   ├── game_entity.py
+│   ├── ghost_entity.py
+│   ├── gum_entity.py
+│   ├── level_entity.py
+│   └── pacman_entity.py
 │
 ├── libs/
 │   └── mazegenerator-2.1.0-py3-none-any.whl
 │
-├── assets/
-│   └── ...
+├── packaging/
+│   └── publish.sh
 │
-└── packaging/
-    └── publish.sh
+├── project_management/
+│   ├── Management.md
+│   └── Timeline.md
+│
+└── screens/
+    ├── __init__.py
+    ├── game_result.py
+    ├── high_score_screen.py
+    ├── instructions_screen.py
+    ├── main_screen.py
+    ├── maze_screen.py
+    ├── pause_screen.py
+    ├── screen_manager.py
+    └── setting_screen.py
 ```
 
 Additional modules will be added as the graphical interface, game loop, highscore system, cheat mode, and other game systems are implemented.
