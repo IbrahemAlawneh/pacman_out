@@ -271,28 +271,24 @@ This ensures resources are properly closed. The project uses type hints througho
 
 The project follows a mature, state-driven Object-Oriented Programming (OOP) architecture. It implements a clear separation of concerns (similar to the MVC pattern), cleanly decoupling game logic, rendering algorithms, UI state management, and data persistence into highly cohesive modules.
 
-                             pac-man.py (Main Entry)
-                                       |
-                                       v
-                                ScreenManager
-                                       |
-         +-----------------------------+-----------------------------+
-         |                             |                             |
-         v                             v                             v
-    UI/Menu Screens               MazeScreen                Configuration & IO
-  (Main, Settings,             (Core Game Loop)            (configuration_files/)
-   Results, Pause)                     |
-                                       |
-         +-----------------------------+-----------------------------+
-         |                                                           |
-         v                                                           v
-   Game Entities (Logic)                                 Draw Elements (Rendering)
-     (entities/)                                             (draw_element/)
-         |                                                           |
-         +-- GameEntity (Rules/State)                                +-- ThemeManager (Audio/Visuals)
-         +-- PacmanEntity (Physics)                                  +-- DrawMaze (Surface Caching)
-         +-- GhostEntity (AI Algorithms)                             +-- DrawPacman / DrawGhost
-         +-- LevelEntity -> [libs/mazegenerator]                     +-- DrawHUD (UI/Cheat Modes)
+```text
+pac-man.py (Main Entry)
+└── ScreenManager (State Controller)
+    ├── UI/Menu Screens (Main, Settings, Results, Pause)
+    ├── Configuration & IO (configuration_files/)
+    └── MazeScreen (Core Game Loop)
+        │
+        ├── Game Entities (Logic - entities/)
+        │   ├── GameEntity (Rules & Global State)
+        │   ├── PacmanEntity (Grid Physics & Movement)
+        │   ├── GhostEntity (BFS & Euclidean AI Algorithms)
+        │   └── LevelEntity (libs/mazegenerator Integration)
+        │
+        └── Draw Elements (Rendering - draw_element/)
+            ├── ThemeManager (Dynamic Audio & Visual Asset Swapping)
+            ├── DrawMaze (Surface Caching Optimization)
+            ├── DrawPacman & DrawGhost (Sprite Animations)
+            └── DrawHUD (Dynamic UI & Cheat Modes)
 
 
 ### Core Systems Breakdown
