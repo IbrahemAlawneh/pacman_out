@@ -288,7 +288,7 @@ pac-man.py (Main Entry)
             ├── ThemeManager (Dynamic Audio & Visual Asset Swapping)
             ├── DrawMaze (Surface Caching Optimization)
             ├── DrawPacman & DrawGhost (Sprite Animations)
-            └── DrawHUD (Dynamic UI & Cheat Modes)
+            └── DrawHUD (Dynamic UI & Cheat Modes)```
 
 
 ### Core Systems Breakdown
