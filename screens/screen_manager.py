@@ -1,4 +1,6 @@
 import pygame
+from pathlib import Path
+from typing import Any
 from .high_score_screen import HighScoreScreen
 from .instructions_screen import InstructionsScreen
 from .main_screen import MainScreen
@@ -9,10 +11,12 @@ from .setting_screen import SettingScreen
 class ScreenManager:
     """Central manager for all games screens (State Machine)
     Handles transitions, screen lifecycle, and memory"""
+
     def __init__(self, surface: pygame.Surface, config: dict):
+        """Build all persistent menu screens and set the initial state."""
         self.surface = surface
         self.config = config
-        self.current_music_path = None
+        self.current_music_path: Path | str | None = None
 
         self.menus = {
             "main_menu": MainScreen(self.surface),
@@ -26,11 +30,12 @@ class ScreenManager:
         }
 
         self.current_screen_name = "main_menu"
-        self.active_screen = self.menus[self.current_screen_name]
+        self.active_screen: Any = self.menus[self.current_screen_name]
         self.clock = pygame.time.Clock()
         self.running = True
 
-    def play_music(self, music_path: str) -> None:
+    def play_music(self, music_path: Path | str) -> None:
+        """Load and loop the given music track if it isn't already playing."""
         if self.current_music_path == music_path:
             return
         try:
@@ -43,7 +48,8 @@ class ScreenManager:
     def run(self) -> None:
         """Main game loop
         Runs continuously until the player closes the game"""
-        self.play_music("assets/sounds/background_music.ogg")
+        mus = Path("assets/sounds/background_music.ogg")
+        self.play_music(mus)
         while self.running:
 
             for event in pygame.event.get():
@@ -67,6 +73,7 @@ class ScreenManager:
                 self.clock.tick(60)
 
     def _handle_action(self, action: str | None) -> None:
+        """Switch the active screen and music based on a returned action."""
         self.play_music("assets/sounds/background_music.ogg")
         if not action:
             return

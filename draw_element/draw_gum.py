@@ -3,15 +3,18 @@ from typing import Any
 
 
 class DrawGum:
+    """Draws normal and super pac-gums onto the screen."""
+
     def __init__(self, screen: pygame.Surface):
         self.screen = screen
         self.normal_color = (255, 223, 150)
         self.super_color = (255, 175, 50)
 
     def draw(
-            self, gums: list[Any], cell_size: int,
-            offset_x: int, offset_y: int
+        self, gums: list[Any], cell_size: int,
+        offset_x: int, offset_y: int
     ) -> None:
+        """Draw every non-eaten gum as a normal or super pellet."""
         normal_radius = max(2, cell_size // 8)
         super_radius = max(4, cell_size // 4)
         for gum in gums:

@@ -3,6 +3,8 @@ import os
 
 
 class DrawHUD:
+    """Renders the score, lives, timer, level, and cheat-state HUD."""
+
     def __init__(self, font_path: str):
         self.font = pygame.font.Font(font_path, 28)
         self.font_sec = pygame.font.Font(font_path, 18)
@@ -29,10 +31,12 @@ class DrawHUD:
         self.cheats_spacing = 120
 
     def draw(
-            self, screen: pygame.Surface, score: int,
-            level: int, lives: int, time_left: int, freeze: bool,
-            invisible: bool, speed: bool
+        self, screen: pygame.Surface, score: int,
+        level: int, lives: int, time_left: int, freeze: bool,
+        invisible: bool, speed: bool
     ) -> None:
+        """Draw the score, lives, timer, level, and cheat icons."""
+
         time_surface = self.font.render(
             f"{time_left}", False, self.text_color
         )

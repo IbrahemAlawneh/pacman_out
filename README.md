@@ -65,13 +65,14 @@ make lint
 
 # Project Structure
 
-```text
+```
 .
 ├── pac-man.py
 ├── config.json
 ├── pyproject.toml
 ├── Makefile
-├── test.py
+├── publish.sh
+├── .gitignore
 ├── README.md
 │
 ├── assets/
@@ -118,9 +119,6 @@ make lint
 ├── libs/
 │   └── mazegenerator-2.1.0-py3-none-any.whl
 │
-├── packaging/
-│   └── publish.sh
-│
 ├── project_management/
 │   ├── Management.md
 │   └── Timeline.md
@@ -135,6 +133,7 @@ make lint
     ├── pause_screen.py
     ├── screen_manager.py
     └── setting_screen.py
+
 ```
 
 Additional modules will be added as the graphical interface, game loop, highscore system, cheat mode, and other game systems are implemented.

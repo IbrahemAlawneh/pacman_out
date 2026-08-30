@@ -4,7 +4,17 @@ from typing import Any
 
 
 def _remove_comments(content: str) -> str:
-    """Remove supported comments without modifying content inside strings."""
+    """
+    Removes supported comments (/* */, //, #) from the provided string content
+    without modifying any content inside string literals.
+
+    Args:
+        content (str): The raw string data, typically
+        read from a configuration file
+
+    Returns:
+        str: The cleaned string with all recognized comments removed.
+    """
 
     pattern = re.compile(
         r"""
@@ -33,7 +43,17 @@ def _remove_comments(content: str) -> str:
 
 
 def _normalize_keys(data: dict[str, Any]) -> dict[str, Any]:
-    """Normalize configuration keys to lowercase."""
+    """
+    Normalizes the keys of a given configuration dictionary by stripping
+    whitespace and converting them to lowercase. Non-string keys are ignored
+
+    Args:
+        data (dict[str, Any]): The raw dictionary parsed from the configuration
+
+    Returns:
+        dict[str, Any]: A new dictionary containing the normalized string keys
+        and their respective values.
+    """
 
     normalized: dict[str, Any] = {}
 
@@ -52,7 +72,23 @@ def _normalize_keys(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def load_config(filename: str) -> dict[str, Any]:
-    """Load, clean, parse, and normalize a configuration file."""
+    """
+    Loads, cleans, parses, and normalizes a JSON configuration file.
+
+    This function safely reads the file, removes comments, and parses the JSON.
+    If any error occurs
+    (e.g., file not found, permission denied, invalid JSON),
+    it catches the exception, prints a warning to the terminal, and returns
+    an empty dictionary to allow the game to continue with default values.
+
+    Args:
+        filename (str): The path to the configuration file to be loaded.
+
+    Returns:
+        dict[str, Any]: A dictionary containing the
+        parsed and normalized configuration data.
+        Returns an empty dictionary if reading or parsing fails.
+    """
 
     try:
         with open(filename, "r", encoding="utf-8") as file:

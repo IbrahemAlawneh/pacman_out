@@ -5,30 +5,31 @@
 
 set -e
 
-BUILD_DIR="packing/build"
-USERNAME-"Ahmadalameri-0"
+BUILD_DIR="packaging/build"
+USERNAME="Ahmadalameri-0"
 GAME="pacman"
 
-echo "Cleaning previous build.."
+echo "Building the executable for Linux via Makefile..."
+make build
+
+echo "Cleaning previous package directory..."
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
-echo "Copying source and assets..."
-cp -r entities configuration_files assets libs \
-      config.json pyproject.toml pac-man.py \
-      "$BUILD_DIR"
+echo "Copying compiled game to package directory..."
+cp -r dist/Pac-Man42/* "$BUILD_DIR"
 
 echo "Adding in-package instructions..."
 cat > "$BUILD_DIR/README.txt" << 'EOF'
 Pac-Man 42 - Quick Start
 ==========================
 Controls: Arrow keys / WASD to move, ESC to pause.
-Run: python pac-man.py config.json
+Run: Just double-click or run ./Pac-Man42 from the terminal.
 Config: edit config.json to customize lives, points, levels, etc.
-Cheat mode: press [key] during gameplay.
+Cheat mode: press [F1-F5] during gameplay.
 EOF
 
 echo "Publishing to Itch.io..."
 butler push "$BUILD_DIR" "$USERNAME/$GAME:linux"
  
-echo "Done"
+echo "Done! The game is live on Itch.io"

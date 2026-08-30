@@ -4,6 +4,13 @@ from mazegenerator import MazeGenerator
 
 
 class Level(BaseModel):
+    """
+    Represents the game level and maze configuration.
+
+    This model manages the current level state, maze dimensions, time
+    limits, and handles the generation of new mazes as the player
+    progresses through the game.
+    """
     level_id: int = Field(default=1)
 
     width: int = Field(default=20)
@@ -23,8 +30,17 @@ class Level(BaseModel):
     @classmethod
     def validate_input(cls, data: Any) -> dict[str, Any]:
         """
-        Safely validate Level configuration.
-        Invalid or missing values are replaced with safe defaults.
+        Safely validates the Level configuration before instantiation.
+
+        Ensures constraints like max_level, max_time, seed, width, and
+        height are valid integers. Invalid or missing values are caught,
+        warnings are printed to the terminal, and safe defaults are applied.
+
+        Args:
+            data (Any): The raw configuration dictionary for the level.
+
+        Returns:
+            dict[str, Any]: A sanitized dictionary with valid values.
         """
         if not isinstance(data, dict):
             print(
@@ -60,23 +76,6 @@ class Level(BaseModel):
             max_level = 10
         safe_data["max_level"] = max_level
 
-        max_time = data.get("level_max_time", 90)
-        try:
-            max_time = int(max_time)
-            if max_time <= 20:
-                print(
-                    "[Warning] Invalid level_max_time. "
-                    "Using default value: 90."
-                )
-                max_time = 90
-        except (ValueError, TypeError):
-            print(
-                "[Warning] Invalid level_max_time. "
-                "Using default value: 90."
-            )
-            max_time = 90
-        safe_data["max_time"] = max_time
-
         seed = data.get("seed", 42)
         try:
             seed = int(seed)
@@ -100,8 +99,14 @@ class Level(BaseModel):
     @model_validator(mode="after")
     def validate_game_logic(self) -> "Level":
         """
-        Validate relationships between Level attributes
-        and initialize the first maze.
+        Validates relationships between Level attributes and initializes
+        the first maze layout.
+
+        Clamps the initial width and height to safe boundaries for rendering,
+        and invokes the MazeGenerator to build the level grid.
+
+        Returns:
+            Level: The fully initialized Level instance.
         """
         if self.width > 18 or self.width < 9:
             self.width = 15
@@ -117,14 +122,25 @@ class Level(BaseModel):
             size=(self.width, self.height),
             seed=self.seed
             )
+
+        if self.max_time < 20 or self.max_time > 90:
+            print(
+                "[Warning] Invalid level_max_time. Using default value: 90."
+            )
+            self.max_time = 90
+
         return self
 
     def next_level(self) -> bool:
         """
-        Move to the next level.
+        Advances the game state to the next level.
+
+        Increments the level ID, expands the maze dimensions based on the
+        current level progression, and generates a new, larger maze.
+
         Returns:
-            True  -> next level was successfully created.
-            False -> current level is already the maximum level.
+            bool: True if the next level was successfully created.
+                  False if the current level is already the maximum level.
         """
         if self.level_id >= self.max_level:
             print(
@@ -151,5 +167,11 @@ class Level(BaseModel):
 
     @property
     def grid(self) -> list[list[int]]:
-        """Return the 2D array representation of the maze."""
+        """
+        Retrieves the 2D array representation of the generated maze.
+
+        Returns:
+            list[list[int]]: The matrix containing maze wall and path data,
+                             or an empty list if the maze is not initialized.
+        """
         return self.maze.maze if self.maze else []

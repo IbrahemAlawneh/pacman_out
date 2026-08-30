@@ -7,6 +7,13 @@ from .gum_entity import Gum
 
 
 class GameEntities(BaseModel):
+    """
+    Central configuration and state manager for the game.
+
+    This model parses raw configuration data, validates it, and instantiates
+    all primary game entities including Pacman,
+    the maze Level, Ghosts, and Gums.
+    """
     highscore_filename: str = Field(default="highscores.json")
 
     lives: int = Field(default=3)
@@ -35,6 +42,17 @@ class GameEntities(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def validate_config(cls, data: Any) -> dict[str, Any]:
+        """
+        Pre-validation hook that ensures the incoming configuration data is
+        a valid dictionary and normalizes its keys.
+
+        Args:
+            data (Any): The raw configuration data to validate.
+
+        Returns:
+            dict[str, Any]: A sanitized dictionary with lowercase string keys.
+            Returns an empty dictionary if the input is invalid.
+        """
         if not isinstance(data, dict):
             print(
                 "[Warning] Configuration data is not a valid object. "
@@ -58,7 +76,16 @@ class GameEntities(BaseModel):
 
     @model_validator(mode="after")
     def create_entities(self) -> "GameEntities":
+        """
+        Post-validation hook that initializes child entities (Pacman, Level,
+        Ghosts, Gums) using the validated configuration fields.
 
+        It processes the maze grid to place Gums and Super Gums, and calculates
+        spawn positions and AI modes for the Ghosts based on bitwise operations
+
+        Returns:
+            GameEntities: The fully initialized model instance.
+        """
         self.points_per_ghost = max(50, min(self.points_per_ghost, 500))
         pacman_config = {
             "lives": self.lives,
@@ -114,6 +141,22 @@ class GameEntities(BaseModel):
         max_row = len(self.level.grid) - 1
         max_col = len(self.level.grid[0]) - 1
 
+        if (
+            self.points_per_super_pacgum < 20 or
+            self.points_per_super_pacgum > 200
+        ):
+            print(
+                "[Warning] Invalid points_per_super_pacgum. "
+                "Clamping to valid range (20-200)."
+            )
+        if (
+            self.points_pes_pacgum < 20 or
+            self.points_pes_pacgum > 200
+        ):
+            print(
+                "[Warning] Invalid points_per_pacgum. "
+                "Clamping to valid range (10-100)."
+            )
         self.points_per_super_pacgum = max(
             20, min(self.points_per_super_pacgum, 200)
         )
@@ -145,7 +188,17 @@ class GameEntities(BaseModel):
         return self
 
     @staticmethod
-    def _validate_ghosts_mode(value: Any) -> int:
+    def _validate_ghosts_mode(value: int) -> int:
+        """
+        Validates and bounds the ghosts_mode bitmask value.
+
+        Args:
+            value (int): The raw input value for ghosts_mode.
+
+        Returns:
+            int: A strictly bounded integer between 1 and 15. Defaults to 1
+                 if the input is invalid or out of bounds.
+        """
         try:
             value = int(value)
         except (ValueError, TypeError):
@@ -169,6 +222,10 @@ class GameEntities(BaseModel):
         return value
 
     def gum_reset(self) -> None:
+        """
+        Clears the current gums list and respawns standard and super gums
+        based on the current maze grid layout.
+        """
         self.gums = []
         max_row = len(self.level.grid) - 1
         max_col = len(self.level.grid[0]) - 1

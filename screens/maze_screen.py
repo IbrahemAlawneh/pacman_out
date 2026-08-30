@@ -1,5 +1,6 @@
 import pygame
 import math
+from typing import Any
 from entities import GameEntities
 from draw_element.draw_maze import DrawMaze
 from draw_element.draw_pacman import DrawPacman
@@ -15,6 +16,7 @@ class GameScreen:
     """Handles routing the input and triggering the rendering of the game."""
 
     def __init__(self, screen: pygame.Surface, config: dict):
+        """Build all game entities, drawers, and initial state."""
         self.screen = screen
         self.config = config
         self.paused = False
@@ -29,7 +31,7 @@ class GameScreen:
         self.pause_screen = PauseScreen(self.screen)
         self.game_result: GameResult | None = None
         self.scared_timer_start = 0
-        self.init_time = self.entities.level_max_time
+        self.init_time = self.entities.level.max_time
         self.all_gums_eaten = False
         self.speed_on = False
         self.is_infinite = False
@@ -38,6 +40,7 @@ class GameScreen:
     def _load_image(
                 self, filename: str, scale_to_screen: bool = False
     ) -> pygame.Surface | None:
+        """Load an image file, optionally scaled to fill the screen."""
         filepath = filename
         try:
             img = pygame.image.load(str(filepath)).convert_alpha()
@@ -51,6 +54,7 @@ class GameScreen:
             return None
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
+        """Route input to pause, cheats, or the active result screen."""
         if self.game_result is not None:
             return self.game_result.handle_event(event)
 
@@ -80,11 +84,9 @@ class GameScreen:
                     elif event.key == pygame.K_F2:
                         if enable_all or cheats.get("ghost_freeze", False):
                             self._cheat_freeze()
-
                     elif event.key == pygame.K_F3:
                         if enable_all or cheats.get("extra_life", False):
                             self.entities.pacman.lives += 1
-
                     elif event.key == pygame.K_F4:
                         if enable_all or cheats.get("speed_boost", False):
                             if not self.speed_on:
@@ -93,7 +95,6 @@ class GameScreen:
                             else:
                                 self.entities.pacman.pacman_speed -= 20
                                 self.speed_on = False
-
                     elif event.key == pygame.K_F5:
                         if enable_all or cheats.get("infinite_lives", False):
                             if not self.is_infinite:
@@ -103,6 +104,7 @@ class GameScreen:
         return None
 
     def update(self) -> str | None:
+        """Advance gameplay one frame, or update the result screen."""
         if self.game_result is not None:
             result = self.game_result.update()
             if result == "next_level":
@@ -129,18 +131,20 @@ class GameScreen:
                 for ghost in self.entities.ghosts:
                     ghost.is_scared = False
                 self.scared_timer_start = 0
-
         self._update_ghosts_position()
         self._check_gum_collisions(pac)
         self._check_ghost_collisions(pac)
         self._update_level_timer()
         return self._check_game_state()
 
-    def _cheat_freeze(self):
+    def _cheat_freeze(self) -> None:
+        """Freeze every ghost in place via the ghost-freeze cheat."""
         for g in self.entities.ghosts:
             g.freeze()
+        return
 
     def _update_ghosts_position(self) -> None:
+        """Move each ghost toward its next grid direction."""
         pac = self.entities.pacman
         pac_grid_x = int((pac.x + (self.cell_size // 2)) // self.cell_size)
         pac_grid_y = int((pac.y + (self.cell_size // 2)) // self.cell_size)
@@ -169,12 +173,10 @@ class GameScreen:
 
             perfect_x = ghost_grid_x * self.cell_size
             perfect_y = ghost_grid_y * self.cell_size
-
             tolerance = step
             is_centered = abs(
                 ghost.x - perfect_x
             ) <= tolerance and abs(ghost.y - perfect_y) <= tolerance
-
             if (
                 is_centered and (
                     ghost.last_grid_x != ghost_grid_x or
@@ -193,7 +195,6 @@ class GameScreen:
                     pac_grid_x,
                     pac_grid_y
                 )
-
             if ghost.direction == "UP":
                 ghost.y -= step
             elif ghost.direction == "DOWN":
@@ -203,7 +204,8 @@ class GameScreen:
             elif ghost.direction == "RIGHT":
                 ghost.x += step
 
-    def _check_ghost_collisions(self, pac) -> None:
+    def _check_ghost_collisions(self, pac: Any) -> None:
+        """Handle Pac-Man touching a ghost: eat it, die, or ignore it."""
         if pac.lives <= 0:
             return
         for ghost in self.entities.ghosts:
@@ -229,20 +231,20 @@ class GameScreen:
                     return
 
     def _reset_positions(self) -> None:
+        """Reset Pac-Man and every ghost back to their spawn points."""
         self.entities.pacman.reset_position(self.cell_size)
         for ghost in self.entities.ghosts:
             ghost.reset(self.entities.level, self.cell_size)
 
     def _new_level_increase(self) -> None:
+        """Raise speeds and ghost difficulty when a new level starts."""
         if self.entities.pacman.pacman_speed < 65:
             self.entities.pacman.pacman_speed = min(
                 65, self.entities.pacman.pacman_speed + 2
             )
-
         for ghost in self.entities.ghosts:
             if getattr(ghost, 'speed', 40) < 63:
                 ghost.speed = min(63, ghost.speed + 2)
-
         hard_count = sum(
             1 for g in self.entities.ghosts if g.mode == 1 and
             g.chase_algorithm == 0
@@ -261,6 +263,7 @@ class GameScreen:
                     break
 
     def _check_game_state(self) -> None | str:
+        """Trigger the result screen on game over, win, or level clear."""
         if self.entities.pacman.lives <= 0:
             self.game_result = GameResult(
                 self.screen, won=False,
@@ -290,7 +293,8 @@ class GameScreen:
                 )
         return None
 
-    def _process_input(self, pac, keys) -> None:
+    def _process_input(self, pac: Any, keys: Any) -> None:
+        """Queue Pac-Man's next direction from the pressed movement keys."""
         if keys[pygame.K_UP] or keys[pygame.K_w]:
             pac.next_direction = "UP"
         elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
@@ -300,12 +304,14 @@ class GameScreen:
         elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             pac.next_direction = "RIGHT"
 
-    def _calculate_speed(self, pac) -> int:
+    def _calculate_speed(self, pac: Any) -> int:
+        """Convert Pac-Man's speed stat into a per-frame pixel step."""
         max_physical_speed = self.cell_size / 6.5
         speed_ratio = pac.pacman_speed / 100.0
         return max(1, int(max_physical_speed * speed_ratio))
 
-    def _update_pacman_position(self, pac, step: int) -> None:
+    def _update_pacman_position(self, pac: Any, step: int) -> None:
+        """Move Pac-Man forward, turning and stopping at walls."""
         center_x = pac.x + (self.cell_size // 2)
         center_y = pac.y + (self.cell_size // 2)
         grid_x = int(center_x // self.cell_size)
@@ -313,7 +319,6 @@ class GameScreen:
 
         perfect_x = grid_x * self.cell_size
         perfect_y = grid_y * self.cell_size
-
         if (
             pac.next_direction != "NONE" and
             pac.next_direction != pac.direction
@@ -352,14 +357,14 @@ class GameScreen:
             elif pac.direction == "RIGHT":
                 pac.x += step
 
-    def _check_gum_collisions(self, pac) -> None:
+    def _check_gum_collisions(self, pac: Any) -> None:
+        """Mark eaten gums, award points, and trigger scared mode."""
         pac_grid_x = int(
             (pac.x + (self.cell_size // 2)) // self.cell_size
         )
         pac_grid_y = int(
             (pac.y + (self.cell_size // 2)) // self.cell_size
         )
-
         for gum in self.entities.gums:
             if (
                 not gum.is_eaten and gum.grid_x == pac_grid_x and
@@ -374,6 +379,7 @@ class GameScreen:
                             ghost.is_scared = True
 
     def _is_path_open(self, grid_x: int, grid_y: int, direction: str) -> bool:
+        """Check whether the given direction is open at a grid cell."""
         try:
             cell = self.entities.level.grid[grid_y][grid_x]
         except IndexError:
@@ -390,17 +396,18 @@ class GameScreen:
         return False
 
     def skip_level(self) -> None:
+        """Advance to the next level and reset gums, layout, and entities."""
         self.entities.level.next_level()
         self.entities.gum_reset()
         self._new_level_increase()
         self._calculate_layout()
         self._reset_positions()
-
         self.entities.level_max_time = self.init_time + (
             (self.entities.level.level_id - 1) * 10
         )
 
     def _load_level_theme(self) -> None:
+        """Load the background image and music for the current level."""
         theme_index = (
             self.entities.level.level_id - 1
         ) % len(GAME_THEMES)
@@ -412,7 +419,7 @@ class GameScreen:
         pygame.mixer.music.play(-1)
 
     def _update_level_timer(self) -> None:
-
+        """Count down the level timer and penalize the player on timeout."""
         current_time = pygame.time.get_ticks()
         if current_time - self.last_timer_update >= 1000:
             if self.entities.level_max_time > 0:
@@ -427,6 +434,7 @@ class GameScreen:
             self._reset_positions()
 
     def _calculate_layout(self) -> None:
+        """Compute cell size, offsets, and spawn positions for the maze."""
         grid = self.entities.level.grid
         grid_width = len(grid[0])
         grid_height = len(grid)
@@ -484,6 +492,7 @@ class GameScreen:
         self._load_level_theme()
 
     def draw(self) -> None:
+        """Draw the maze, entities, HUD, and any active overlay screen."""
         self.screen.blit(self.bk_image, (0, 0))
         self.maze_draw.draw(
             self.entities.level, self.cell_size,

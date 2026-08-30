@@ -4,6 +4,8 @@ from typing import Any
 
 
 class DrawGhost:
+    """Loads, scales, and draws all ghost sprites based on state."""
+
     def __init__(self, screen: pygame.Surface):
         self.screen = screen
         self.base_path = os.path.join("assets", "images", "charater")
@@ -11,7 +13,7 @@ class DrawGhost:
         self.ghost_colors = ["blue", "orange", "green", "purple"]
         self.directions = ["up", "down", "left", "right"]
 
-        self.raw_images = {}
+        self.raw_images: dict[str, dict[str, pygame.Surface]] = {}
         for color in self.ghost_colors:
             self.raw_images[color] = {}
             for direction in self.directions:
@@ -19,12 +21,15 @@ class DrawGhost:
                 self.raw_images[color][
                     direction.upper()
                 ] = self._load_image(filename)
+
         self.raw_scared = self._load_image("scared.png")
-        self.scaled_images = {}
-        self.scaled_scared = None
+
+        self.scaled_images: dict[str, dict[str, pygame.Surface]] = {}
+        self.scaled_scared: pygame.Surface | None = None
         self.current_cell_size = 0
 
     def _load_image(self, filename: str) -> pygame.Surface:
+        """Load a ghost sprite, falling back to a red square if missing."""
         full_path = os.path.join(self.base_path, filename)
         try:
             return pygame.image.load(full_path).convert_alpha()
@@ -35,6 +40,7 @@ class DrawGhost:
             return fallback
 
     def _scale_images(self, cell_size: int) -> None:
+        """Rescale all cached ghost sprites to fit the current cell size."""
         size = int(cell_size * 0.8)
         self.scaled_images = {}
         for color in self.ghost_colors:
@@ -50,9 +56,10 @@ class DrawGhost:
         self.current_cell_size = cell_size
 
     def draw(
-            self, ghosts: list[Any], cell_size: int,
-            offset_x: int, offset_y: int
+        self, ghosts: list[Any], cell_size: int,
+        offset_x: int, offset_y: int
     ) -> None:
+        """Draw every non-eaten ghost, rescaling sprites if needed."""
 
         if self.current_cell_size != cell_size:
             self._scale_images(cell_size)
@@ -60,6 +67,8 @@ class DrawGhost:
         for ghost in ghosts:
             if getattr(ghost, 'is_eaten', False):
                 continue
+            current_image: pygame.Surface | None = None
+
             if getattr(ghost, 'is_scared', False):
                 current_image = self.scaled_scared
             else:
@@ -71,12 +80,13 @@ class DrawGhost:
                     direction = "RIGHT"
                 current_image = self.scaled_images[ghost_name][direction]
 
-            img_width = current_image.get_width()
-            img_height = current_image.get_height()
+            if current_image is not None:
+                img_width = current_image.get_width()
+                img_height = current_image.get_height()
 
-            center_x = ghost.x + offset_x + (cell_size // 2)
-            center_y = ghost.y + offset_y + (cell_size // 2)
+                center_x = ghost.x + offset_x + (cell_size // 2)
+                center_y = ghost.y + offset_y + (cell_size // 2)
 
-            draw_x = center_x - (img_width // 2)
-            draw_y = center_y - (img_height // 2)
-            self.screen.blit(current_image, (draw_x, draw_y))
+                draw_x = center_x - (img_width // 2)
+                draw_y = center_y - (img_height // 2)
+                self.screen.blit(current_image, (draw_x, draw_y))

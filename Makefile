@@ -19,7 +19,11 @@ build:
 	$(POETRY) run pyinstaller --name "Pac-Man42" \
 	--add-data "assets:assets" \
 	--add-data "config.json:." \
+	--add-data "configuration_files:configuration_files" \
+	--hidden-import "pygame.mixer" \
+	--hidden-import "pygame.font" \
 	--windowed \
+	--noconfirm \
 	$(MAIN)
 
 clean:
@@ -33,7 +37,4 @@ lint:
 	       --ignore-missing-imports --disallow-untyped-defs \
 	       --check-untyped-defs
 
-test:
-	$(POETRY) run pytest
-
-.PHONY: install run debug build clean lint test
+.PHONY: install run debug build clean lint

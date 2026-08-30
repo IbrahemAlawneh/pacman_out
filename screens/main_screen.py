@@ -4,9 +4,7 @@ from typing import Any
 
 
 class MainScreen:
-    """
-    Main menu screen.
-    """
+    """Animated main menu with hoverable, clickable navigation buttons."""
     WIDTH = 1200
     HEIGHT = 800
 
@@ -40,6 +38,7 @@ class MainScreen:
         screen: pygame.Surface,
         assets_path: str | Path = "assets/images/main",
     ) -> None:
+        """Load sounds, animation assets, and build the menu buttons."""
 
         self.screen = screen
         self.assets_path = Path(assets_path)
@@ -125,6 +124,7 @@ class MainScreen:
         self.selected_button_index = 0
 
     def handle_event(self, event: pygame.event.Event) -> Any | None:
+        """Handle keyboard and mouse input for menu navigation."""
         if not self.animation_finished:
             return None
 
@@ -163,28 +163,33 @@ class MainScreen:
         return None
 
     def _select_next_button(self) -> None:
+        """Move the selection to the next button, wrapping around."""
         self.selected_button_index = (
             self.selected_button_index + 1
         ) % len(self.buttons)
 
     def _select_previous_button(self) -> None:
+        """Move the selection to the previous button, wrapping around."""
         self.selected_button_index = (
             self.selected_button_index - 1
         ) % len(self.buttons)
 
     def _activate_selected_button(self) -> Any:
+        """Play the click sound and return the selected button's action."""
         if self.click_sound:
             self.click_sound.play()
         return self.buttons[self.selected_button_index]["action"]
 
     @property
     def is_animation_finished(self) -> bool:
+        """Return whether the intro animation has finished playing."""
         return self.animation_finished
 
     # Animation (Optimized: Lazy Loading)
     def _load_single_frame(
             self, frame_number: int
     ) -> pygame.Surface | None:
+        """Load and resize one animation frame, or None if missing."""
         filename = (
             f"{self.FRAME_PREFIX}{frame_number:03d}"
             f"{self.FRAME_EXTENSION}"
@@ -208,6 +213,7 @@ class MainScreen:
             return None
 
     def _update_animation(self) -> None:
+        """Advance the intro animation to the frame for the current time."""
         if self.animation_finished:
             return
 
@@ -233,6 +239,7 @@ class MainScreen:
 
     # Drawing
     def draw(self) -> None:
+        """Draw the current animation frame or the finished menu buttons."""
         self._update_animation()
 
         if self.animation_finished:
@@ -249,6 +256,7 @@ class MainScreen:
                 self.screen.fill((0, 0, 0))
 
     def _draw_buttons(self) -> None:
+        """Draw each octagon-shaped button with its hover/select state."""
         mouse_position = pygame.mouse.get_pos()
         cut = 12
 

@@ -3,7 +3,7 @@ from typing import Any
 
 
 class PauseScreen:
-    """Transparent pause menu and How to Play screen."""
+    """Manage the transparent pause menu and help screens."""
     MENU, HELP = "menu", "help"
     OVERLAY = (4, 7, 22, 145)
     PANEL = (13, 18, 46, 245)
@@ -13,8 +13,7 @@ class PauseScreen:
     STEEL_BTN = ((70, 100, 145), (25, 35, 70), (90, 180, 220))
 
     def __init__(self, surface: pygame.Surface) -> None:
-        """Create the menu and calculate its button positions."""
-
+        """Initialize the pause screen and configure button layouts."""
         self.surface, self.mode, self.selected = surface, self.MENU, 0
         font = pygame.font.match_font("segoeui,dejavusans,arial")
         self.title = pygame.font.Font(font, 48)
@@ -36,11 +35,11 @@ class PauseScreen:
         ]
 
     def open(self) -> None:
-        """Reset the screen to the pause menu."""
+        """Reset the screen state to the main pause menu."""
         self.mode, self.selected = self.MENU, 0
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
-        """Handle keyboard and mouse input."""
+        """Process keyboard and mouse input events."""
         if self.mode == self.HELP:
             if event.type == pygame.KEYDOWN and event.key in (
                 pygame.K_ESCAPE, pygame.K_BACKSPACE
@@ -72,7 +71,7 @@ class PauseScreen:
         return None
 
     def _activate(self, index: int) -> Any | None:
-        """Run the selected action."""
+        """Execute the action associated with the selected button."""
         action = self.buttons[index]["action"]
         if action == "instructions":
             self.mode = self.HELP
@@ -84,8 +83,7 @@ class PauseScreen:
         font: pygame.font.Font, color: tuple[int, int, int] = WHITE,
         center: bool = True
     ) -> None:
-        """Draw text centered unless requested otherwise."""
-
+        """Render and draw text on the surface."""
         image = font.render(value, True, color)
         self.surface.blit(
             image, image.get_rect(center=pos) if center
@@ -95,7 +93,7 @@ class PauseScreen:
     def _panel(
             self, rect: pygame.Rect, border: tuple[int, int, int]
     ) -> None:
-        """Draw a transparent rounded panel."""
+        """Draw a semi-transparent rounded background panel."""
         layer = pygame.Surface(rect.size, pygame.SRCALPHA)
         pygame.draw.rect(
             layer, self.PANEL, layer.get_rect(), border_radius=22
@@ -104,7 +102,7 @@ class PauseScreen:
         pygame.draw.rect(self.surface, border, rect, 2, border_radius=22)
 
     def draw(self) -> None:
-        """Draw the overlay and the current page."""
+        """Render the active pause or help screen overlay."""
         overlay = pygame.Surface(self.surface.get_size(), pygame.SRCALPHA)
         overlay.fill(self.OVERLAY)
         self.surface.blit(overlay, (0, 0))
@@ -114,7 +112,7 @@ class PauseScreen:
             self, rect: pygame.Rect, label: str,
             active: bool
     ) -> None:
-        """Draw the original metallic button with slight transparency."""
+        """Render a stylized interactive button."""
         top, bottom, border = self.PURPLE_BTN if active else self.STEEL_BTN
         layer = pygame.Surface(rect.size, pygame.SRCALPHA)
         for y in range(rect.height):
@@ -153,7 +151,7 @@ class PauseScreen:
         self._text(label, rect.center, self.button, color)
 
     def _draw_menu(self) -> None:
-        """Draw the main pause page."""
+        """Draw the main pause menu interface."""
         panel = pygame.Rect(0, 0, 500, 560)
         panel.center = self.surface.get_rect().center
         self._panel(panel, self.PINK)
@@ -175,7 +173,7 @@ class PauseScreen:
                    (panel.centerx, panel.bottom - 25), self.small, self.MUTED)
 
     def _draw_help(self) -> None:
-        """Draw How to Play in the same visual style as Pause."""
+        """Draw the instructions and controls interface."""
         panel = pygame.Rect(0, 0, 610, 520)
         panel.center = self.surface.get_rect().center
         self._panel(panel, self.CYAN)

@@ -1,21 +1,25 @@
 import pygame
+from typing import Any
 
 
 class DrawMaze:
+    """Handles rendering the maze grid with various visual themes."""
     NORTH = 1
     EAST = 2
     SOUTH = 4
     WEST = 8
 
     def __init__(self, screen: pygame.Surface):
+        """Initialize the maze drawer with a target screen."""
         self.screen = screen
         self._maze_surface = None
         self._cached_level_id = None
-        self.current_theme = None
+        self.current_theme: str = "classic"
 
     def _build_maze_surface(
-            self, level, cell_size: int
+            self, level: Any, cell_size: int
     ) -> pygame.Surface:
+        """Build and return a cached surface of the entire maze grid."""
         grid = level.grid
         width_px = len(grid[0]) * cell_size
         height_px = len(grid) * cell_size
@@ -33,8 +37,7 @@ class DrawMaze:
             self, surface: pygame.Surface, cell: int, row_idx:
             int, col_idx: int, cell_size: int
     ) -> None:
-        """here we control of the themes and
-        which style to draw for each theme"""
+        """Draw a single cell according to the current theme style."""
         x = col_idx * cell_size
         y = row_idx * cell_size
         rect = pygame.Rect(x, y, cell_size, cell_size)
@@ -55,6 +58,7 @@ class DrawMaze:
     def _draw_special_cell(
             self, surface: pygame.Surface, rect: pygame.Rect
     ) -> None:
+        """Render a special decorative golden cell on the surface."""
         outer_color = (218, 165, 32)
         inner_color = (255, 215, 0)
         pygame.draw.rect(
@@ -73,7 +77,7 @@ class DrawMaze:
             self, surface: pygame.Surface, cell: int,
             rect: pygame.Rect
     ) -> None:
-        """this just just for bk_2 theme the color and style all tested"""
+        """Draw a neon-styled wall using layered glowing colors."""
         layers = [
             ((105, 0, 150), 8),
             ((225, 0, 255), 4),
@@ -102,7 +106,8 @@ class DrawMaze:
     def _draw_desert_wall(
             self, surface: pygame.Surface, cell: int, rect: pygame.Rect
     ) -> None:
-        """this just just for bk_3 theme the color and style all tested"""
+        """Draw a desert-styled wall with dimensional
+        shadows and highlights."""
         shadow_color = (139, 69, 19)
         sand_color = (210, 150, 70)
         sun_highlight = (245, 200, 120)
@@ -186,7 +191,7 @@ class DrawMaze:
             self, surface: pygame.Surface, cell: int,
             rect: pygame.Rect
     ) -> None:
-        """this just just for bk_1 theme the color and style all tested"""
+        """Draw a classic arcade-styled wall with double inner lines."""
         wall_color = ("#cad318")
         wall_color_2 = ("#78b22b")
         gap = 3
@@ -227,6 +232,7 @@ class DrawMaze:
             self, surface: pygame.Surface, cell: int,
             rect: pygame.Rect
     ) -> None:
+        """Draw a basic flat-colored wall as a fallback theme style."""
         wall_color = (57, 139, 64)
         if cell & self.NORTH:
             pygame.draw.line(
@@ -246,11 +252,11 @@ class DrawMaze:
             )
 
     def draw(
-            self, level, cell_size: int,
+            self, level: Any, cell_size: int,
             offset_x: int, offset_y: int,
             theme_name: str
     ) -> None:
-
+        """Render the cached maze onto the screen at the given offsets."""
         if not level.grid:
             return
         if self._cached_level_id != level.level_id:

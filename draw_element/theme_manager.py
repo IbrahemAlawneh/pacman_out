@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class ThemeConfig:
+    """Holds a theme's name, background image path, and music path."""
+
     name: str
     bg_path: str
     music_path: str

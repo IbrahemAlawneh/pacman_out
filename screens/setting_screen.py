@@ -3,7 +3,10 @@ from pathlib import Path
 
 
 class SettingScreen:
+    """Interactive settings menu for audio, maze size, and cheat toggles."""
+
     def __init__(self, screen: pygame.Surface, config: dict) -> None:
+        """Load assets, apply config defaults, and set up hitboxes."""
         self.screen = screen
         self.config = config
         """check if there is this keys and if not
@@ -58,6 +61,7 @@ class SettingScreen:
     def _load_image(
             self, filename: str, scale_to_screen: bool = False
     ) -> pygame.Surface | None:
+        """Load a settings-screen image, optionally scaled to fill screen."""
         filepath = self.assets_path / filename
         try:
             img = pygame.image.load(str(filepath)).convert_alpha()
@@ -108,6 +112,7 @@ class SettingScreen:
             start_y += 70
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
+        """Handle clicks and drags for sliders, arrows, and cheat toggles."""
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             return "back_to_menu"
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -191,6 +196,7 @@ class SettingScreen:
                         cheats[key] = not cheats[key]
 
     def draw(self) -> None:
+        """Draw the background, panel, logo, and every settings section."""
         if self.bg_image:
             self.screen.blit(self.bg_image, (0, 0))
         else:
@@ -215,6 +221,7 @@ class SettingScreen:
         self._draw_cheat_section()
 
     def _draw_audio_section(self) -> None:
+        """Draw the music and SFX volume sliders and their labels."""
         lbl_music = self.font_label.render(
             "BACKGROUND MUSIC", True, self.COLOR_TEXT
         )
@@ -273,6 +280,7 @@ class SettingScreen:
         )
 
     def _draw_music_buttons(self) -> None:
+        """Draw the row of buttons used to switch music tracks."""
         title = self.font_value.render("CHANGE MUSIC", True, self.COLOR_TEXT)
         self.screen.blit(title, (205, 430))
         if self.music_btn:
@@ -281,6 +289,7 @@ class SettingScreen:
                 self.screen.blit(scaled_btn, rect.topleft)
 
     def _draw_number_inputs(self) -> None:
+        """Draw the speed and maze size fields with their arrow buttons."""
 
         settings = [
             ("GHOSTS SPEED", "ghost_speed", 140, 560),
@@ -323,6 +332,7 @@ class SettingScreen:
                 self.screen.blit(scaled_down, (x + 100, y + 52))
 
     def _draw_cheat_section(self) -> None:
+        """Draw the cheat mode title and every cheat toggle switch."""
         title = self.font_title.render(
             "CHEAT MODE", True, self.COLOR_ACCENT
         )

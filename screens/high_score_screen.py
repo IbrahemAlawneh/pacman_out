@@ -4,7 +4,11 @@ import pygame
 
 
 class HighScoreScreen:
-    def __init__(self, screen: pygame.Surface, file_name) -> None:
+    """Manage and render the high score leaderboard screen."""
+
+    def __init__(self, screen: pygame.Surface, file_name: str) -> None:
+        """Initialize the high score screen, load assets,
+        and set dimensions."""
         self.screen = screen
         # Paths & Assets
         self.scores_file = Path("configuration_files") / file_name
@@ -50,6 +54,7 @@ class HighScoreScreen:
         self._load_high_scores()
 
     def _load_image(self, filename: str) -> pygame.Surface | None:
+        """Load an image from the assets folder and scale it if necessary."""
         filepath = self.assets_path / filename
         try:
             image = pygame.image.load(str(filepath)).convert_alpha()
@@ -65,7 +70,7 @@ class HighScoreScreen:
             return None
 
     def _load_high_scores(self) -> None:
-
+        """Read the JSON score file and store the top 10 highest scores."""
         try:
             with open(self.scores_file, "r", encoding="utf-8") as file:
                 data = json.load(file)
@@ -76,8 +81,7 @@ class HighScoreScreen:
             self.high_scores = []
 
     def _draw_empty_state(self) -> None:
-        """when the file high socre empty it show message"""
-
+        """Render a placeholder message when no high scores are available."""
         box_width = self.BAR_WIDTH
         box_height = 150
         box_rect = pygame.Rect(
@@ -119,6 +123,7 @@ class HighScoreScreen:
         self.screen.blit(sub_text, sub_rect)
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
+        """Process scroll interactions and navigation events."""
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             return "back_to_menu"
 
@@ -159,6 +164,7 @@ class HighScoreScreen:
         return None
 
     def draw(self) -> None:
+        """Render the background, header, and the list of high scores."""
         self._load_high_scores()
         if self.background_image:
             self.screen.blit(self.background_image, (0, 0))
@@ -180,6 +186,7 @@ class HighScoreScreen:
             self._draw_scrollbar()
 
     def _draw_scrollbar(self) -> None:
+        """Render the vertical scrollbar track and thumb."""
         sb_data = self._get_scrollbar_data()
         if not sb_data:
             return
@@ -198,6 +205,7 @@ class HighScoreScreen:
         )
 
     def _draw_header(self) -> None:
+        """Render the table header displaying column titles."""
         header_rect = pygame.Rect(
             self.START_X, self.START_Y, self.BAR_WIDTH,
             self.HEADER_HEIGHT
@@ -232,6 +240,7 @@ class HighScoreScreen:
         )
 
     def _draw_score_bars(self) -> None:
+        """Render the visible high score entries with clipping."""
         start_drawing_y = (
             self.START_Y + self.HEADER_HEIGHT + self.GAP_BETWEEN_BARS
         )
@@ -291,9 +300,7 @@ class HighScoreScreen:
             current_y += self.BAR_HEIGHT + self.GAP_BETWEEN_BARS
 
     def _get_scrollbar_data(self) -> dict | None:
-        """Returns the coordinates and dimensions
-        of the scrollbar if it is visible"""
-
+        """Calculate and return the scrollbar dimensions and positions."""
         total_items = len(self.high_scores)
         if total_items <= self.VISIBLE_ITEMS:
             return None

@@ -1,9 +1,13 @@
 import pygame
 import os
+from typing import Any
 
 
 class DrawPacman:
+    """Handles rendering the Pac-Man character on the screen."""
+
     def __init__(self, screen: pygame.Surface):
+        """Initialize the drawer and load base Pac-Man images."""
         self.screen = screen
 
         img_path = os.path.join("assets", "images", "charater")
@@ -19,9 +23,11 @@ class DrawPacman:
         self.scaled_open = self.img_open
 
     def draw(
-            self, pacman_entity, cell_size: int,
+            self, pacman_entity: Any, cell_size: int,
             offset_x: int, offset_y: int
     ) -> None:
+        """Draw the animated Pac-Man sprite based on its direction."""
+
         if self.last_cell_size != cell_size and cell_size > 0:
             size = int(cell_size * 0.8)
             self.scaled_close = pygame.transform.scale(

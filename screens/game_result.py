@@ -1,9 +1,12 @@
 import json
 from pathlib import Path
+from typing import Any, cast
 import pygame
 
 
 class GameResult:
+    """Shows level transitions, game over/win, and highscore entry."""
+
     OVERLAY, PANEL_FILL = (4, 7, 22, 175), (13, 18, 46, 190)
     CYAN, PINK, GOLD, RED = (
         (86, 224, 255), (224, 104, 255),
@@ -16,6 +19,7 @@ class GameResult:
             score: int, next_level: int | None = None,
             file_name: str = "high_score.json"
     ) -> None:
+        """Set up the result screen state, fonts, scores, and buttons."""
         self.source_path = Path("configuration_files") / file_name
         self.screen = screen
         self.won, self.score, self.next_level = won, score, next_level
@@ -24,7 +28,7 @@ class GameResult:
         )
 
         font = pygame.font.match_font("segoeui,dejavusans,arial")
-        self.fonts = {
+        self.fonts: dict[int | str, pygame.font.Font] = {
             s: pygame.font.Font(font, s) for s in (56, 30, 24, 20, 16)
         }
         self.fonts["bold"] = pygame.font.Font(font, 56)
@@ -37,9 +41,9 @@ class GameResult:
             "transition" if next_level else "enter_name"
             if self.qualifies else "result"
         )
-
         cx, y0 = screen.get_width() // 2, screen.get_height() // 2 + 35
-        self.btns = [
+
+        self.btns: list[dict[str, Any]] = [
             {
                 "text": t, "action": a,
                 "rect": pygame.Rect(cx - 170, y0 + i * 70, 340, 58)
@@ -53,13 +57,18 @@ class GameResult:
         ]
         self.selected = 0
 
-    def _load_scores(self) -> list[dict]:
+    def _load_scores(self) -> list[dict[str, Any]]:
+        """Load saved highscores, returning an empty list on any error."""
         try:
-            return json.loads(self.source_path.read_text())
+            return cast(
+                list[dict[str, Any]],
+                json.loads(self.source_path.read_text())
+            )
         except Exception:
             return []
 
     def _save_score(self, name: str) -> None:
+        """Append the new score and persist the top 10 to disk."""
         scores = sorted(
             self._load_scores() + [
                 {
@@ -70,6 +79,7 @@ class GameResult:
         self.source_path.write_text(json.dumps(scores, indent=2))
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
+        """Route input to name entry or result-stage button handling."""
         if self.stage == "transition":
             return None
         if self.stage == "enter_name" and event.type == pygame.KEYDOWN:
@@ -100,7 +110,8 @@ class GameResult:
                 elif event.key in (
                     pygame.K_RETURN, pygame.K_KP_ENTER
                 ):
-                    return self.btns[self.selected]["action"]
+                    # تحويل صريح إلى str
+                    return str(self.btns[self.selected]["action"])
             elif event.type == pygame.MOUSEMOTION and event.rel != (0, 0):
                 for i, b in enumerate(self.btns):
                     if b["rect"].collidepoint(event.pos):
@@ -108,10 +119,12 @@ class GameResult:
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 for b in self.btns:
                     if b["rect"].collidepoint(event.pos):
-                        return b["action"]
+                        # تحويل صريح إلى str
+                        return str(b["action"])
         return None
 
     def update(self) -> str | None:
+        """Advance past the level-complete transition after one second."""
         if (
             self.stage == "transition" and
             pygame.time.get_ticks() - self.started_at >= 1000
@@ -120,16 +133,20 @@ class GameResult:
         return None
 
     def _text(
-            self, txt: str, pos: tuple,
-            size: int, color: tuple | None = None,
+            self, txt: str, pos: tuple[int, int],
+            size: int | str, color: tuple[int, int, int] | None = None,
             bold: bool = False
     ) -> None:
+        """Render one centered text label at the given position."""
         img = (
             self.fonts["bold"] if bold else self.fonts[size]
         ).render(txt, True, color or self.WHITE)
         self.screen.blit(img, img.get_rect(center=pos))
 
-    def _panel(self, w: int, h: int, border: tuple) -> pygame.Rect:
+    def _panel(
+            self, w: int, h: int, border: tuple[int, int, int]
+    ) -> pygame.Rect:
+        """Draw a centered translucent panel with a colored border."""
         r = pygame.Rect(0, 0, w, h)
         r.center = self.screen.get_rect().center
         fill = pygame.Surface(r.size, pygame.SRCALPHA)
@@ -143,6 +160,7 @@ class GameResult:
         return r
 
     def draw(self) -> None:
+        """Draw the overlay and the panel matching the current stage."""
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         overlay.fill(self.OVERLAY)
         self.screen.blit(overlay, (0, 0))
@@ -156,6 +174,7 @@ class GameResult:
             self._draw_result(cx)
 
     def _draw_transition(self, cx: int) -> None:
+        """Draw the level-complete panel with a glowing title."""
         p = self._panel(430, 220, self.CYAN)
         for off, col in ((4, self.DIM), (2, self.PINK), (0, self.WHITE)):
             self._text(
@@ -164,6 +183,7 @@ class GameResult:
         self._text(f"LEVEL {self.next_level}", (cx, p.y + 130), 56, self.GOLD)
 
     def _draw_enter_name(self, cx: int) -> None:
+        """Draw the new-highscore panel with the name input box."""
         p = self._panel(530, 310, self.GOLD)
         title_y = p.y + 55
         for off, col in (
@@ -197,6 +217,7 @@ class GameResult:
         )
 
     def _draw_result(self, cx: int) -> None:
+        """Draw the win/lose panel with the final score and buttons."""
         p = self._panel(480, 430, self.PINK if self.won else self.RED)
         self._text(
             "YOU WIN!" if self.won else "GAME OVER",
@@ -230,10 +251,9 @@ class GameResult:
                 width=3 if active else 1, border_radius=14
             )
             self._text(
-                b["text"], r.center, 24,
+                str(b["text"]), r.center, 24,
                 self.WHITE if active else self.MUTED
             )
-
         self._text(
             "\u2191 \u2193 SELECT   ENTER CONFIRM",
             (cx, p.bottom - 25), 16, self.MUTED

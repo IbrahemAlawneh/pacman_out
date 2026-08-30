@@ -6,19 +6,14 @@ class InstructionsScreen:
     """Draw the instructions screen and handle the return key."""
 
     def __init__(self, surface: pygame.Surface, config: dict) -> None:
+        """Load assets and build the list of rules and cheat entries."""
         self.surface = surface
         self.config = config
         self._init_assets()
 
-        p_pacgum = max(
-            10, min(self.config.get("points_per_pacgum", 10), 100)
-        )
-        p_super = max(
-            50, min(self.config.get("points_per_super_pacgum", 50), 200)
-        )
-        p_ghost = max(
-            200, min(self.config.get("points_per_ghost", 200), 200)
-        )
+        p_pacgum = self.config.get("points_per_pacgum", 20)
+        p_super = self.config.get("points_per_super_pacgum", 40)
+        p_ghost = self.config.get("points_per_ghost", 200)
 
         self.instructions = [
             ("GAME RULES", self.HEADER_COLOR, None),
