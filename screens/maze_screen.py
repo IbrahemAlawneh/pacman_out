@@ -218,10 +218,6 @@ class GameScreen:
                     ghost.y = -1000
                     ghost.respawn_timer_start = pygame.time.get_ticks()
                     pac.total_points += pac.points_per_ghost
-                    print(
-                        f"[Action] Ghost eaten! Total Points: "
-                        f"{pac.total_points}"
-                    )
                 elif self.is_infinite:
                     return
                 else:

@@ -267,29 +267,41 @@ This ensures resources are properly closed. The project uses type hints througho
 
 ---
 
-# General Software Architecture
+## General Software Architecture
 
-The project follows a modular OOP architecture, separating game entities (`entities/`), configuration handling (`configuration_files/`), and the external maze package (`libs/`) into distinct concerns.
+The project follows a mature, state-driven Object-Oriented Programming (OOP) architecture. It implements a clear separation of concerns (similar to the MVC pattern), cleanly decoupling game logic, rendering algorithms, UI state management, and data persistence into highly cohesive modules.
 
-Additional systems will connect to this architecture as they are implemented:
+                             pac-man.py (Main Entry)
+                                       |
+                                       v
+                                ScreenManager
+                                       |
+         +-----------------------------+-----------------------------+
+         |                             |                             |
+         v                             v                             v
+    UI/Menu Screens               MazeScreen                Configuration & IO
+  (Main, Settings,             (Core Game Loop)            (configuration_files/)
+   Results, Pause)                     |
+                                       |
+         +-----------------------------+-----------------------------+
+         |                                                           |
+         v                                                           v
+   Game Entities (Logic)                                 Draw Elements (Rendering)
+     (entities/)                                             (draw_element/)
+         |                                                           |
+         +-- GameEntity (Rules/State)                                +-- ThemeManager (Audio/Visuals)
+         +-- PacmanEntity (Physics)                                  +-- DrawMaze (Surface Caching)
+         +-- GhostEntity (AI Algorithms)                             +-- DrawPacman / DrawGhost
+         +-- LevelEntity -> [libs/mazegenerator]                     +-- DrawHUD (UI/Cheat Modes)
 
-```text
-                         Game
-                          |
-       +------------------+------------------+
-       |                  |                  |
-       v                  v                  v
- GameEntities          UI/Menu          Highscore
-       |
-       +-- Pacman
-       +-- Ghosts
-       +-- Level
-              |
-              v
-        MazeGenerator
-```
 
-Additional systems will include: game loop, input handling, collision detection, Pac-Gum/Super Pac-Gum management, Ghost AI, timer, pause handling, cheat mode, rendering, and highscores.
+### Core Systems Breakdown
+
+*   **Screens (`screens/`):** Acts as the central state machine. `screen_manager.py` handles seamless transitions and event routing between UI menus, settings, and the core gameplay loop (`maze_screen.py`), ensuring each game state is isolated and memory-efficient.
+*   **Game Entities (`entities/`):** The "Brain" of the game. It contains pure logical data models, handling grid-based physics, collision detection, and Ghost AI (implementing escalating difficulty via BFS and Euclidean algorithms). It interacts with the external `mazegenerator` wheel through `level_entity.py`.
+*   **Draw Elements (`draw_element/`):** A dedicated rendering engine completely decoupled from the game logic. It is responsible for `pygame` blitting, sprite animation frames, surface caching for the maze, and rendering the dynamic HUD.
+*   **Theme & Asset Management (`assets/` & `theme_manager.py`):** A dynamic system that manages scaling, caching, and swapping of visual themes (Classic, Neon, Desert) alongside a smart audio state tracker that prevents music interruption during UI navigation.
+*   **Configuration & Data (`configuration_files/`):** Manages persistent application states, ensuring safe data parsing via validation scripts and handling file I/O for the dynamic Top 10 Highscore JSON system.
 
 ---
 
