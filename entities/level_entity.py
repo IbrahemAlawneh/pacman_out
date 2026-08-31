@@ -60,21 +60,44 @@ class Level(BaseModel):
                     "Using minimum value: 3."
                 )
                 max_level = 3
-
             elif max_level > 10:
                 print(
                     "[Warning] max_level cannot be greater than 10. "
                     "Using maximum value: 10."
                 )
                 max_level = 10
-
         except (ValueError, TypeError):
             print(
                 "[Warning] Invalid max_level. "
                 "Using default value: 10."
-            )
+                )
             max_level = 10
+
         safe_data["max_level"] = max_level
+
+        max_time = data.get("max_time", 90)
+        try:
+            max_time = int(max_time)
+            if max_time < 20:
+                print(
+                    "[Warning] max_time cannot be less than 20. "
+                    "Using minimum value: 20."
+                    )
+                max_time = 20
+
+            elif max_time > 100:
+                print(
+                    "[Warning] max_time cannot be greater than 100. "
+                    "Using maximum value: 100."
+                    )
+                max_time = 100
+        except (ValueError, TypeError):
+            print(
+                "[Warning] Invalid max_time. "
+                "Using default value: 40."
+                )
+            max_time = 90
+        safe_data["max_time"] = max_time
 
         seed = data.get("seed", 42)
         try:
@@ -85,12 +108,11 @@ class Level(BaseModel):
                 "Using default value: 42."
             )
             seed = 42
-
         safe_data["seed"] = seed
-
         try:
             safe_data["width"] = int(data.get("width", 15))
             safe_data["height"] = int(data.get("height", 12))
+
         except (ValueError, TypeError):
             safe_data["width"] = 15
             safe_data["height"] = 12
@@ -109,8 +131,10 @@ class Level(BaseModel):
             Level: The fully initialized Level instance.
         """
         if self.width > 18 or self.width < 9:
+            print("[Warning] Invalid width maze. Using default value: 15.")
             self.width = 15
         if self.height > 15 or self.height < 8:
+            print("[Warning] Invalid height maze. Using default value: 12.")
             self.height = 12
 
         self.initial_width = self.width
@@ -122,12 +146,6 @@ class Level(BaseModel):
             size=(self.width, self.height),
             seed=self.seed
             )
-
-        if self.max_time < 20 or self.max_time > 90:
-            print(
-                "[Warning] Invalid level_max_time. Using default value: 90."
-            )
-            self.max_time = 90
 
         return self
 

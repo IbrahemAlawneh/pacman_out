@@ -7,6 +7,7 @@ OUTPUT = highscores.json
 all: run
 
 install:
+	pip install poetry
 	$(POETRY) install --with dev
 
 run:
@@ -16,6 +17,7 @@ debug:
 	$(POETRY) run $(PYTHON) -m pdb $(MAIN) $(CONFIG)
 
 build:
+	pip install pyinstaller
 	$(POETRY) run pyinstaller --name "Pac-Man42" \
 	--add-data "assets:assets" \
 	--add-data "config.json:." \
@@ -28,12 +30,12 @@ build:
 
 clean:
 	rm -rf __pycache__ .mypy_cache .pytest_cache .ruff_cache
-	rm -rf packaging/build dist build
+	rm -rf packaging/build dist build *.spec
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 
 lint:
-	$(POETRY) run flake8 .
-	$(POETRY) run mypy . --warn-return-any --warn-unused-ignores \
+	$(PYTHON) -m flake8 .
+	$(PYTHON) -m mypy . --warn-return-any --warn-unused-ignores \
 	       --ignore-missing-imports --disallow-untyped-defs \
 	       --check-untyped-defs
 

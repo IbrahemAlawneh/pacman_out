@@ -15,7 +15,7 @@ from .game_result import GameResult
 class GameScreen:
     """Handles routing the input and triggering the rendering of the game."""
 
-    def __init__(self, screen: pygame.Surface, config: dict):
+    def __init__(self, screen: pygame.Surface, config: dict[str, Any]):
         """Build all game entities, drawers, and initial state."""
         self.screen = screen
         self.config = config
@@ -224,7 +224,7 @@ class GameScreen:
                     return
                 else:
                     pac.lives -= 1
-                    self.entities.level_max_time = self.init_time + (
+                    self.entities.level.max_time = self.init_time + (
                         (self.entities.level.level_id - 1) * 10
                     )
                     self._reset_positions()
@@ -402,7 +402,7 @@ class GameScreen:
         self._new_level_increase()
         self._calculate_layout()
         self._reset_positions()
-        self.entities.level_max_time = self.init_time + (
+        self.entities.level.max_time = self.init_time + (
             (self.entities.level.level_id - 1) * 10
         )
 
@@ -414,7 +414,9 @@ class GameScreen:
         current_theme = GAME_THEMES[theme_index]
 
         self.theme_name = current_theme.name
-        self.bk_image = self._load_image(current_theme.bg_path, True)
+        self.bk_image: pygame.Surface | None = self._load_image(
+            current_theme.bg_path, True
+        )
         pygame.mixer.music.load(current_theme.music_path)
         pygame.mixer.music.play(-1)
 
@@ -422,13 +424,13 @@ class GameScreen:
         """Count down the level timer and penalize the player on timeout."""
         current_time = pygame.time.get_ticks()
         if current_time - self.last_timer_update >= 1000:
-            if self.entities.level_max_time > 0:
-                self.entities.level_max_time -= 1
+            if self.entities.level.max_time > 0:
+                self.entities.level.max_time -= 1
 
             self.last_timer_update = current_time
-        if self.entities.level_max_time <= 0:
+        if self.entities.level.max_time <= 0:
             self.entities.pacman.lives -= 1
-            self.entities.level_max_time = self.init_time + (
+            self.entities.level.max_time = self.init_time + (
                 (self.entities.level.level_id - 1) * 10
             )
             self._reset_positions()
@@ -493,7 +495,8 @@ class GameScreen:
 
     def draw(self) -> None:
         """Draw the maze, entities, HUD, and any active overlay screen."""
-        self.screen.blit(self.bk_image, (0, 0))
+        if self.bk_image is not None:
+            self.screen.blit(self.bk_image, (0, 0))
         self.maze_draw.draw(
             self.entities.level, self.cell_size,
             self.offset_x, self.offset_y,
@@ -515,7 +518,7 @@ class GameScreen:
             self.screen, self.entities.pacman.total_points,
             self.entities.level.level_id,
             self.entities.pacman.lives,
-            self.entities.level_max_time,
+            self.entities.level.max_time,
             self.entities.ghosts[0].is_frozen,
             self.is_infinite,
             self.speed_on

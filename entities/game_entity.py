@@ -23,13 +23,13 @@ class GameEntities(BaseModel):
     ghost_speed: int = Field(default=50)
     ghosts_mode: int = Field(default=1)
     seed: int = Field(default=-1)
-    level_max_time: int = Field(default=90)
+    max_time: int = Field(default=90)
     max_level: int = Field(default=10)
 
     width: int = Field(default=20)
     height: int = Field(default=20)
     points_per_super_pacgum: int = Field(default=40)
-    points_pes_pacgum: int = Field(default=20)
+    points_pes_pacgum: int = Field(default=10)
 
     scared_duration_ms: int = Field(default=10000)
     ghost_respawn_ms: int = Field(default=5000)
@@ -86,17 +86,21 @@ class GameEntities(BaseModel):
         Returns:
             GameEntities: The fully initialized model instance.
         """
-        self.points_per_ghost = max(50, min(self.points_per_ghost, 500))
-        pacman_config = {
+        if self.points_per_ghost > 500 or self.points_per_ghost < 50:
+            self.points_per_ghost = max(50, min(self.points_per_ghost, 500))
+            print(
+                "[Warning] points per ghost is invalid"
+                "using default value (50-500)"
+                )
+        pacman_config: dict[str, Any] = {
             "lives": self.lives,
             "points_per_ghost": self.points_per_ghost,
             "pacman_speed": self.pacman_speed,
         }
         self.pacman = Pacman(**pacman_config)
-
-        level_config = {
+        level_config: dict[str, Any] = {
             "seed": self.seed,
-            "level_max_time": self.level_max_time,
+            "max_time": self.max_time,
             "max_level": self.max_level,
             "width": self.width,
             "height": self.height,
@@ -123,7 +127,7 @@ class GameEntities(BaseModel):
         for ghost_index in range(4):
             mode = (ghosts_mode >> ghost_index) & 1
             grid_x, grid_y = corners[ghost_index]
-            ghost_config = {
+            ghost_config: dict[str, Any] = {
                 "ghost_speed": self.ghost_speed,
                 "mode": mode,
                 "color": colors[ghost_index],
@@ -150,8 +154,8 @@ class GameEntities(BaseModel):
                 "Clamping to valid range (20-200)."
             )
         if (
-            self.points_pes_pacgum < 20 or
-            self.points_pes_pacgum > 200
+            self.points_pes_pacgum < 10 or
+            self.points_pes_pacgum > 100
         ):
             print(
                 "[Warning] Invalid points_per_pacgum. "

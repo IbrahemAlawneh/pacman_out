@@ -26,7 +26,7 @@ class PauseScreen:
             ("MAIN MENU", "back_to_menu"), ("QUIT GAME", "quit")
         )
         x, y = surface.get_width() // 2 - 170, surface.get_height() // 2 - 64
-        self.buttons = [
+        self.buttons: list[dict[str, Any]] = [
             {
                 "text": text, "action": action, "rect": pygame.Rect
                 (x, y + i * 78, 340, 64)

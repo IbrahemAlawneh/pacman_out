@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import pygame
+from typing import Any
 
 
 class HighScoreScreen:
@@ -50,7 +51,7 @@ class HighScoreScreen:
         self.is_dragging = False
         self.drag_mouse_offset_y = 0
 
-        self.high_scores: list[dict] = []
+        self.high_scores: list[dict[str, int]] = []
         self._load_high_scores()
 
     def _load_image(self, filename: str) -> pygame.Surface | None:
@@ -299,7 +300,7 @@ class HighScoreScreen:
             self.screen.blit(score_surface, score_rect)
             current_y += self.BAR_HEIGHT + self.GAP_BETWEEN_BARS
 
-    def _get_scrollbar_data(self) -> dict | None:
+    def _get_scrollbar_data(self) -> dict[str, Any] | None:
         """Calculate and return the scrollbar dimensions and positions."""
         total_items = len(self.high_scores)
         if total_items <= self.VISIBLE_ITEMS:

@@ -1,15 +1,19 @@
 from pathlib import Path
 import pygame
+from typing import Any
 
 
 class InstructionsScreen:
     """Draw the instructions screen and handle the return key."""
 
-    def __init__(self, surface: pygame.Surface, config: dict) -> None:
+    def __init__(
+            self, surface: pygame.Surface, config: dict[str, Any]
+    ) -> None:
         """Load assets and build the list of rules and cheat entries."""
         self.surface = surface
         self.config = config
         self._init_assets()
+        self.bg: pygame.Surface | None = None
 
         p_pacgum = self.config.get("points_per_pacgum", 20)
         p_super = self.config.get("points_per_super_pacgum", 40)

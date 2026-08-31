@@ -2,20 +2,20 @@
     
     # General game and highscore configuration
     "highscore_filename": "high_score.json",
-    "level_max_time": -10,
-    "max_level": -10,
-    "width": -14,
-    "height": -11,
+    "max_time": 90,
+    "max_level": 10,
+    "width": 16,
+    "height": 12,
 
     # Pac-Man / player configuration
-    "lives": -3,
-    "points_pes_pacgum": -20,
-    "points_per_super_pacgum": -1,
-    "points_per_ghost": -1,
-    "pacman_speed": -1,
-    "seed": -1,
+    "lives": 3,
+    "points_pes_pacgum": 10,
+    "points_per_super_pacgum": 40,
+    "points_per_ghost": 200,
+    "pacman_speed": 50,
+    "seed": 42,
 
     # Ghost configuration
-    "ghost_speed": -0,
+    "ghost_speed": 50,
     "ghosts_mode": 1
 }

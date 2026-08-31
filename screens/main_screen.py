@@ -77,7 +77,7 @@ class MainScreen:
         # Fonts & Buttons
         self.button_font = pygame.font.Font(None, 42)
 
-        self.buttons = [
+        self.buttons: list[dict[str, Any]] = [
             {
                 "text": "PLAY", "action": "play",
                 "rect": pygame.Rect(

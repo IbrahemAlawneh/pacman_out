@@ -26,7 +26,7 @@ class Pacman(BaseModel):
 
     points_per_ghost: int = Field(default=200)
     pacman_speed: int = Field(default=50)
-    center: tuple | None = Field(default=None)
+    center: tuple[int, int] | None = Field(default=None)
 
     @model_validator(mode="before")
     @classmethod
@@ -93,6 +93,11 @@ class Pacman(BaseModel):
         Returns:
             Pacman: The fully validated and initialized Pacman instance.
         """
+
+        if self.lives > 10:
+            self.lives = 10
+            print("[Warning] pacman live invalid using maximum lives 10")
+
         if self.pacman_speed > 100:
             print(
                 "[Warning] pacman_speed exceeds maximum of 100. "

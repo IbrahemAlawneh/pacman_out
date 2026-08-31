@@ -1,11 +1,12 @@
 import pygame
 from pathlib import Path
+from typing import Any
 
 
 class SettingScreen:
     """Interactive settings menu for audio, maze size, and cheat toggles."""
 
-    def __init__(self, screen: pygame.Surface, config: dict) -> None:
+    def __init__(self, screen: pygame.Surface, config: dict[str, Any]) -> None:
         """Load assets, apply config defaults, and set up hitboxes."""
         self.screen = screen
         self.config = config
@@ -163,7 +164,7 @@ class SettingScreen:
         else:
             self.sfx_volume = ratio
 
-    def _handle_number_clicks(self, pos: tuple) -> None:
+    def _handle_number_clicks(self, pos: tuple[int, int]) -> None:
         """Handles arrow-key presses to change the numbers
         within the specified constraints"""
         limits = {
@@ -179,7 +180,7 @@ class SettingScreen:
             elif rect_down.collidepoint(pos):
                 self.config[key] = max(limits[key][0], self.config[key] - 1)
 
-    def _handle_cheat_clicks(self, pos: tuple) -> None:
+    def _handle_cheat_clicks(self, pos: tuple[int, int]) -> None:
         """Handles toggling the Cheat buttons
         based on the Master Switch logic"""
         cheats = self.config["cheats"]

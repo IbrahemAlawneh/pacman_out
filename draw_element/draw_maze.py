@@ -12,7 +12,7 @@ class DrawMaze:
     def __init__(self, screen: pygame.Surface):
         """Initialize the maze drawer with a target screen."""
         self.screen = screen
-        self._maze_surface = None
+        self._maze_surface: pygame.Surface | None = None
         self._cached_level_id = None
         self.current_theme: str = "classic"
 
@@ -265,4 +265,5 @@ class DrawMaze:
                 level, cell_size
             )
             self._cached_level_id = level.level_id
-        self.screen.blit(self._maze_surface, (offset_x, offset_y))
+        if self._maze_surface is not None:
+            self.screen.blit(self._maze_surface, (offset_x, offset_y))

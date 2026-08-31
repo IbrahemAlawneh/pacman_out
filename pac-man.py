@@ -36,6 +36,8 @@ def main() -> None:
     config = load_config(config_path)
     mang = ScreenManager(surface, config)
     mang.run()
+    pygame.quit()
+    sys.exit()
 
 
 if __name__ == "__main__":
