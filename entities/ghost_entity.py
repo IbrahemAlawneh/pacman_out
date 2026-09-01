@@ -1,10 +1,9 @@
 from typing import Any, ClassVar
-from pydantic import BaseModel, Field, model_validator
 import math
 import random
 
 
-class Ghost(BaseModel):
+class Ghost:
     """
     Represents a Ghost entity within the game.
 
@@ -12,26 +11,6 @@ class Ghost(BaseModel):
     (scared, eaten, frozen, dead), movement speed, and its AI mode for
     pathfinding (Random, BFS, or Euclidean distance).
     """
-    x: int = Field(default=0)
-    y: int = Field(default=0)
-    spawn_x: int = Field(default=0)
-    spawn_y: int = Field(default=0)
-
-    direction: str = Field(default="NONE")
-    color: str = Field(default="orange")
-
-    is_scared: bool = Field(default=False)
-    is_eaten: bool = Field(default=False)
-    is_frozen: bool = Field(default=False)
-    is_dead: bool = Field(default=False)
-
-    speed: int = Field(default=50)
-    mode: int = Field(default=0)
-
-    last_grid_x: int = Field(default=-1)
-    last_grid_y: int = Field(default=-1)
-    respawn_timer_start: int = Field(default=0)
-    chase_algorithm: int = Field(default=0)
     OPPOSITE_DIRECTIONS: ClassVar[dict[str, str]] = {
         "UP": "DOWN",
         "DOWN": "UP",
@@ -40,83 +19,45 @@ class Ghost(BaseModel):
         "NONE": "NONE"
     }
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_input(cls, data: Any) -> dict[str, Any]:
-        """
-        Validates the configuration passed to a Ghost object before
-        instantiation.
-        Ensures that speed and mode values are within acceptable bounds.
-        If validation fails, it prints a warning to the terminal and sets
-        safe default values.
+    def __init__(
+        self,
+        x: int = 0,
+        y: int = 0,
+        spawn_x: int = 0,
+        spawn_y: int = 0,
+        direction: str = "NONE",
+        color: str = "orange",
+        is_scared: bool = False,
+        is_eaten: bool = False,
+        is_frozen: bool = False,
+        is_dead: bool = False,
+        speed: int = 50,
+        ghost_speed: int | None = None,
+        mode: int = 0,
+        last_grid_x: int = -1,
+        last_grid_y: int = -1,
+        respawn_timer_start: int = 0,
+        chase_algorithm: int = 0,
+        **kwargs: Any
+    ) -> None:
+        self.x = x
+        self.y = y
+        self.spawn_x = spawn_x
+        self.spawn_y = spawn_y
+        self.direction = direction
+        self.color = color
+        self.is_scared = is_scared
+        self.is_eaten = is_eaten
+        self.is_frozen = is_frozen
+        self.is_dead = is_dead
 
-        mode:
-            0 = Random
-            1 = Hard
-        Args:
-            data (Any): The raw configuration dictionary for the ghost.
+        self.speed = ghost_speed if ghost_speed is not None else speed
 
-        Returns:
-            dict[str, Any]: A sanitized dictionary with valid configuration
-            values.
-        """
-        if not isinstance(data, dict):
-            print(
-                "[Warning] Ghost configuration is invalid. "
-                "Using default values."
-            )
-            return {}
-
-        safe_data: dict[str, Any] = dict(data)
-
-        speed = data.get("ghost_speed", data.get("speed", 40))
-
-        if speed is None or (isinstance(speed, str) and not speed.strip()):
-            print("[Warning] Invalid Ghost speed. Using default value: 40.")
-            speed = 40
-        try:
-            speed = int(speed)
-            if speed <= 0:
-                print(
-                    "[Warning] Invalid Ghost speed. Using default value: 40."
-                )
-                speed = 40
-            elif speed > 100:
-                print(
-                    "[Warning] Invalid Ghost speed. "
-                    "Using Max Speed value: 100."
-                )
-                speed = 100
-        except (ValueError, TypeError):
-            print("[Warning] Invalid Ghost speed. Using default value: 40.")
-            speed = 40
-
-        safe_data["speed"] = speed
-        mode = data.get("mode", 0)
-
-        if mode is None or (isinstance(mode, str) and not mode.strip()):
-            print(
-                "[Warning] Invalid Ghost mode. "
-                "Using default mode: 0 (Random)."
-            )
-            mode = 0
-        try:
-            mode = int(mode)
-            if mode not in (0, 1):
-                print(
-                    "[Warning] Invalid Ghost mode. "
-                    "Using default mode: 0 (Random)."
-                )
-                mode = 0
-        except (ValueError, TypeError):
-            print(
-                "[Warning] Invalid Ghost mode. "
-                "Using default mode: 0 (Random)."
-            )
-            mode = 0
-
-        safe_data["mode"] = mode
-        return safe_data
+        self.mode = mode
+        self.last_grid_x = last_grid_x
+        self.last_grid_y = last_grid_y
+        self.respawn_timer_start = respawn_timer_start
+        self.chase_algorithm = chase_algorithm
 
     def set_mode(self, mode: int) -> None:
         """
@@ -136,6 +77,7 @@ class Ghost(BaseModel):
     def is_hard(self) -> bool:
         """
         Checks if the ghost is currently operating in Hard mode.
+
         Returns:
             bool: True if the mode is 1 (Hard), False otherwise.
         """
@@ -250,7 +192,7 @@ class Ghost(BaseModel):
 
         Returns:
             int: The integer distance (number of steps) to the target,
-                 or -1 if no valid path is found.
+                or -1 if no valid path is found.
         """
         if start_x == target_x and start_y == target_y:
             return 0

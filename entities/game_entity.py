@@ -1,5 +1,5 @@
 from typing import Any
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ConfigDict
 from .ghost_entity import Ghost
 from .level_entity import Level
 from .pacman_entity import Pacman
@@ -10,10 +10,11 @@ class GameEntities(BaseModel):
     """
     Central configuration and state manager for the game.
 
-    This model parses raw configuration data, validates it, and instantiates
-    all primary game entities including Pacman,
-    the maze Level, Ghosts, and Gums.
+    This model parses raw configuration data, validates it strictly against
+    types and boundary ranges, and instantiates all primary game entities.
     """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     highscore_filename: str = Field(default="highscores.json")
 
     lives: int = Field(default=3)
@@ -22,7 +23,7 @@ class GameEntities(BaseModel):
     pacman_speed: int = Field(default=50)
     ghost_speed: int = Field(default=50)
     ghosts_mode: int = Field(default=1)
-    seed: int = Field(default=-1)
+    seed: int = Field(default=42)
     max_time: int = Field(default=90)
     max_level: int = Field(default=10)
 
@@ -43,61 +44,104 @@ class GameEntities(BaseModel):
     @classmethod
     def validate_config(cls, data: Any) -> dict[str, Any]:
         """
-        Pre-validation hook that ensures the incoming configuration data is
-        a valid dictionary and normalizes its keys.
-
-        Args:
-            data (Any): The raw configuration data to validate.
-
-        Returns:
-            dict[str, Any]: A sanitized dictionary with lowercase string keys.
-            Returns an empty dictionary if the input is invalid.
+        Pre-validation hook acting as an ultimate shield.
+        Validates both data types and boundaries (min/max ranges).
+        Out-of-bound values are safely clamped, and invalid types fallback
+        to safe defaults with terminal warnings.
         """
         if not isinstance(data, dict):
             print(
                 "[Warning] Configuration data is not a valid object. "
-                "Using default values."
+                "Using default values for everything."
             )
             return {}
 
         safe_data: dict[str, Any] = {}
+        int_fields = {
+            "lives": (3, 1, 10),
+            "points_per_ghost": (200, 50, 500),
+            "pacman_speed": (50, 40, 100),
+            "ghost_speed": (50, 40, 100),
+            "ghosts_mode": (1, 1, 15),
+            "seed": (42, -1, 1000),
+            "points_per_super_pacgum": (40, 20, 200),
+            "points_pes_pacgum": (20, 10, 100),
+            "scared_duration_ms": (10000, 5000, 12000),
+            "ghost_respawn_ms": (5000, 3000, 6000),
+            "max_time": (90, 20, 100),
+            "max_level": (10, 1, 10),
+            "width": (15, 9, 18),
+            "height": (12, 8, 15)
+        }
 
         for key, value in data.items():
             if not isinstance(key, str):
                 print(
-                    "[Warning] A configuration key is not a string. "
+                    f"[Warning] Key '{key}' is not a string. "
                     "The key will be ignored."
                 )
                 continue
 
-            normalized_key = key.strip().lower()
-            safe_data[normalized_key] = value
+            norm_key = key.strip().lower()
+
+            if norm_key == "highscore_filename":
+                if not value or not isinstance(value, str):
+                    print(
+                        f"[Warning] Invalid {norm_key}: '{value}'. "
+                        "Using default: highscores.json"
+                    )
+                else:
+                    safe_data[norm_key] = str(value)
+
+            elif norm_key in int_fields:
+                default_val, min_val, max_val = int_fields[norm_key]
+                try:
+                    if isinstance(value, bool):
+                        raise ValueError
+
+                    if isinstance(value, float):
+                        print(
+                            f"[Warning] {norm_key} is a float ({value}). "
+                            f"Truncating to integer: {int(value)}."
+                        )
+
+                    parsed_val = int(value)
+
+                    if min_val is not None and max_val is not None:
+                        if parsed_val < min_val or parsed_val > max_val:
+                            clamped = max(min_val, min(parsed_val, max_val))
+                            print(
+                                f"[Warning] {norm_key} is out of bounds. "
+                                f"Clamping {parsed_val} -> {clamped}."
+                            )
+                            safe_data[norm_key] = clamped
+                        else:
+                            safe_data[norm_key] = parsed_val
+                    else:
+                        safe_data[norm_key] = parsed_val
+
+                except (ValueError, TypeError):
+                    print(
+                        f"[Warning] Invalid type for {norm_key}: '{value}'. "
+                        f"Using default: {default_val}."
+                    )
+
         return safe_data
 
     @model_validator(mode="after")
     def create_entities(self) -> "GameEntities":
         """
-        Post-validation hook that initializes child entities (Pacman, Level,
-        Ghosts, Gums) using the validated configuration fields.
-
-        It processes the maze grid to place Gums and Super Gums, and calculates
-        spawn positions and AI modes for the Ghosts based on bitwise operations
-
-        Returns:
-            GameEntities: The fully initialized model instance.
+        Post-validation hook that initializes child entities.
+        Since all bounding and clamping is guaranteed by the before-validator,
+        this method only focuses on safe instantiation and grid processing.
         """
-        if self.points_per_ghost > 500 or self.points_per_ghost < 50:
-            self.points_per_ghost = max(50, min(self.points_per_ghost, 500))
-            print(
-                "[Warning] points per ghost is invalid"
-                "using default value (50-500)"
-                )
         pacman_config: dict[str, Any] = {
             "lives": self.lives,
             "points_per_ghost": self.points_per_ghost,
             "pacman_speed": self.pacman_speed,
         }
         self.pacman = Pacman(**pacman_config)
+
         level_config: dict[str, Any] = {
             "seed": self.seed,
             "max_time": self.max_time,
@@ -107,7 +151,6 @@ class GameEntities(BaseModel):
         }
         self.level = Level(**level_config)
 
-        ghosts_mode = self._validate_ghosts_mode(self.ghosts_mode)
         self.ghosts = []
         max_x = self.level.width - 1
         max_y = self.level.height - 1
@@ -116,16 +159,16 @@ class GameEntities(BaseModel):
             (max_x, 0),
             (0, max_y),
             (max_x, max_y)
-            ]
+        ]
         colors = [
             "orange",
             "blue",
             "purple",
             "green"
-            ]
+        ]
 
         for ghost_index in range(4):
-            mode = (ghosts_mode >> ghost_index) & 1
+            mode = (self.ghosts_mode >> ghost_index) & 1
             grid_x, grid_y = corners[ghost_index]
             ghost_config: dict[str, Any] = {
                 "ghost_speed": self.ghost_speed,
@@ -136,37 +179,13 @@ class GameEntities(BaseModel):
                 "spawn_x": grid_x,
                 "spawn_y": grid_y,
                 "chase_algorithm": ghost_index % 2
-                }
+            }
             ghost = Ghost(**ghost_config)
             self.ghosts.append(ghost)
 
         self.gums = []
-
         max_row = len(self.level.grid) - 1
         max_col = len(self.level.grid[0]) - 1
-
-        if (
-            self.points_per_super_pacgum < 20 or
-            self.points_per_super_pacgum > 200
-        ):
-            print(
-                "[Warning] Invalid points_per_super_pacgum. "
-                "Clamping to valid range (20-200)."
-            )
-        if (
-            self.points_pes_pacgum < 10 or
-            self.points_pes_pacgum > 100
-        ):
-            print(
-                "[Warning] Invalid points_per_pacgum. "
-                "Clamping to valid range (10-100)."
-            )
-        self.points_per_super_pacgum = max(
-            20, min(self.points_per_super_pacgum, 200)
-        )
-        self.points_pes_pacgum = max(
-            10, min(self.points_pes_pacgum, 100)
-        )
 
         for row_idx, row in enumerate(self.level.grid):
             for col_idx, cell in enumerate(row):
@@ -175,6 +194,7 @@ class GameEntities(BaseModel):
                 is_corner = (
                     row_idx == 0 or row_idx == max_row
                 ) and (col_idx == 0 or col_idx == max_col)
+
                 if is_corner:
                     self.gums.append(
                         Gum(
@@ -190,40 +210,6 @@ class GameEntities(BaseModel):
                         )
                     )
         return self
-
-    @staticmethod
-    def _validate_ghosts_mode(value: int) -> int:
-        """
-        Validates and bounds the ghosts_mode bitmask value.
-
-        Args:
-            value (int): The raw input value for ghosts_mode.
-
-        Returns:
-            int: A strictly bounded integer between 1 and 15. Defaults to 1
-                 if the input is invalid or out of bounds.
-        """
-        try:
-            value = int(value)
-        except (ValueError, TypeError):
-            print(
-                "[Warning] Invalid ghosts_mode. "
-                "Using default value: 1."
-            )
-            return 1
-        if value < 1:
-            print(
-                "[Warning] ghosts_mode cannot be less than 1. "
-                "Using value: 1."
-            )
-            return 1
-        if value > 15:
-            print(
-                "[Warning] ghosts_mode cannot be greater than 15. "
-                "Using maximum value: 15."
-            )
-            return 15
-        return value
 
     def gum_reset(self) -> None:
         """
@@ -241,6 +227,7 @@ class GameEntities(BaseModel):
                 is_corner = (
                     row_idx == 0 or row_idx == max_row
                 ) and (col_idx == 0 or col_idx == max_col)
+
                 if is_corner:
                     self.gums.append(
                         Gum(

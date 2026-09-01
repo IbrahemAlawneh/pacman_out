@@ -153,37 +153,45 @@ The game uses a `config.json` file with extended features:
 | Key | Default | Description |
 |---|---|---|
 | `highscore_filename` | `"highscores.json"` | Path to save top scores |
-| `seed` | `42` | Maze generation seed |
-| `level_max_time` | `90` | Level time limit (seconds) |
-| `max_level` | `10` | Total levels (clamped 3–20) |
-| `lives` | `3` | Starting lives (min: 1) |
-| `points_per_pacgum` | `10` | Points per Pac-Gum |
-| `points_per_super_pacgum` | `50` | Points per Super Pac-Gum (must be > pacgum) |
-| `points_per_ghost` | `200` | Points per eaten ghost |
-| `pacman_speed` | `50` | Player speed (must be ≥ ghost_speed) |
-| `ghost_speed` | `50` | Ghosts' speed |
-| `ghosts_mode` | `1` | 4-bit mask (1–15) setting Hard/Chase mode |
+| `max_time` | `90` | Level time limit in seconds |
+| `max_level` | `10` | Total number of levels |
+| `width` | `15` | Initial maze grid width |
+| `height` | `12` | Initial maze grid height |
+| `seed` | `42` | Maze generation seed (-1 to 1000) |
+| `lives` | `3` | Starting lives (1 - 10) |
+| `points_pes_pacgum` | `20` | Points per standard Pac-Gum (10 - 100) |
+| `points_per_super_pacgum` | `40` | Points per Super Pac-Gum (20 - 200) |
+| `points_per_ghost` | `200` | Points per eaten ghost (50 - 500) |
+| `pacman_speed` | `50` | Player speed (40 - 100) |
+| `ghost_speed` | `50` | Ghosts' movement speed (40 - 100) |
+| `ghosts_mode` | `1` | 4-bit mask setting Hard/Chase mode (1 - 15) |
+| `ghost_respawn_ms` | `5000` | Ghost respawn timer in milliseconds (3000 - 6000) |
+| `scared_duration_ms`| `10000` | Scared mode duration in milliseconds (5000 - 12000) |
 
 ## Example
 
 ```json
 {
-    # General config
+    # General & Level Config
     "highscore_filename": "highscores.json",
-    "seed": 42,
-    "level_max_time": 90,
+    "max_time": 90,
     "max_level": 10,
+    "width": 15,
+    "height": 12,
+    "seed": 42,
 
-    // Player config
+    // Pac-Man / Player Config
     "lives": 3,
-    "points_per_pacgum": 10,
-    "points_per_super_pacgum": 50,
+    "points_pes_pacgum": 20,
+    "points_per_super_pacgum": 40,
     "points_per_ghost": 200,
     "pacman_speed": 50,
 
-    /* Ghost config */
+    /* Ghost Config */
     "ghost_speed": 50,
-    "ghosts_mode": 1
+    "ghosts_mode": 1,
+    "ghost_respawn_ms": 5000,
+    "scared_duration_ms": 10000
 }
 ```
 

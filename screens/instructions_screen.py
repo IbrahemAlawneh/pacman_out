@@ -15,7 +15,7 @@ class InstructionsScreen:
         self._init_assets()
         self.bg: pygame.Surface | None = None
 
-        p_pacgum = self.config.get("points_per_pacgum", 20)
+        p_pacgum = self.config.get("points_pes_pacgum", 20)
         p_super = self.config.get("points_per_super_pacgum", 40)
         p_ghost = self.config.get("points_per_ghost", 200)
 

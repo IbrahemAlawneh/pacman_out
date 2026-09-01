@@ -227,7 +227,6 @@ class MainScreen:
 
             self.current_frame_surface = None
             self.animation_finished = True
-            print("[Info] Main menu animation finished.")
             return
 
         if target_frame_index != self.current_frame_index:

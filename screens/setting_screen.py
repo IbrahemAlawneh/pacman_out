@@ -170,8 +170,8 @@ class SettingScreen:
         limits = {
             "ghost_speed": (40, 100),
             "pacman_speed": (40, 100),
-            "width": (9, 18),
-            "height": (8, 15)
+            "width": (9, 15),
+            "height": (9, 15)
         }
 
         for key, (rect_up, rect_down) in self.num_buttons.items():
@@ -317,7 +317,7 @@ class SettingScreen:
                     )
             else:
                 val_text = self.font_value.render(
-                    str(max(5, min(self.config[key], 20))), True, (0, 0, 0)
+                    str(max(9, min(self.config[key], 15))), True, (0, 0, 0)
                     )
 
             self.screen.blit(val_text, (x + 10, y + 38))
