@@ -80,7 +80,14 @@ class GameScreen:
                     enable_all = cheats.get("enable_all", False)
                     if event.key == pygame.K_F1:
                         if enable_all or cheats.get("level_skip", False):
-                            self.skip_level()
+                            if (self.entities.level.level_id >=
+                                    self.entities.level.max_level):
+                                print(
+                                    "[Warning] Maximum level reached. "
+                                    "There is no next level."
+                                )
+                            else:
+                                self.skip_level()
                     elif event.key == pygame.K_F2:
                         if enable_all or cheats.get("ghost_freeze", False):
                             self._cheat_freeze()
