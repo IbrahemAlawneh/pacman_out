@@ -7,39 +7,29 @@ class MainScreen:
     """Animated main menu with hoverable, clickable navigation buttons."""
     WIDTH = 1200
     HEIGHT = 800
-
     ANIMATION_FPS = 30
     TOTAL_FRAMES = 120
-
     FRAME_PREFIX = "ezgif-frame-"
     FRAME_EXTENSION = ".jpg"
-
     BUTTON_WIDTH = 280
     BUTTON_HEIGHT = 58
     BUTTON_GAP = 14
-
     BUTTON_CENTER_X = WIDTH // 2 + 50
     BUTTON_START_Y = 285 + 50
-
     TEXT_COLOR = (245, 245, 255)
     TEXT_SHADOW_COLOR = (10, 5, 25)
-
     BUTTON_COLOR = (28, 18, 48, 180)
     BUTTON_HOVER_COLOR = (255, 60, 170)
-
     BUTTON_BORDER_COLOR = (120, 90, 255)
     BUTTON_HOVER_BORDER_COLOR = (0, 255, 220)
-
     BUTTON_GLOW_COLOR = (255, 60, 170, 60)
 
-    # Constructor
     def __init__(
         self,
         screen: pygame.Surface,
         assets_path: str | Path = "assets/images/main",
     ) -> None:
         """Load sounds, animation assets, and build the menu buttons."""
-
         self.screen = screen
         self.assets_path = Path(assets_path)
 
@@ -55,7 +45,6 @@ class MainScreen:
             self.click_sound = pygame.mixer.Sound(
                 "assets/sounds/click.wav"
             )
-
             self.hover_sound.set_volume(0.25)
             self.click_sound.set_volume(0.8)
         except (FileNotFoundError, pygame.error) as e:
@@ -67,16 +56,12 @@ class MainScreen:
                 "not found. Skipping animation."
             )
             self.animation_finished = True
-
         self.animation_start_time = pygame.time.get_ticks()
 
         self.current_frame_index = 0
         self.current_frame_surface: pygame.Surface | None = None
         self.final_frame: pygame.Surface | None = None
-
-        # Fonts & Buttons
         self.button_font = pygame.font.Font(None, 42)
-
         self.buttons: list[dict[str, Any]] = [
             {
                 "text": "PLAY", "action": "play",
@@ -118,7 +103,6 @@ class MainScreen:
                 )
             },
         ]
-
         for button in self.buttons:
             button["rect"].centerx = self.BUTTON_CENTER_X
         self.selected_button_index = 0
@@ -127,9 +111,7 @@ class MainScreen:
         """Handle keyboard and mouse input for menu navigation."""
         if not self.animation_finished:
             return None
-
         previous_index = self.selected_button_index
-
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_UP, pygame.K_w):
                 self._select_previous_button()
@@ -139,14 +121,12 @@ class MainScreen:
                 return self._activate_selected_button()
             elif event.key == pygame.K_ESCAPE:
                 return "quit"
-
         elif event.type == pygame.MOUSEMOTION:
             mouse_position = event.pos
             for index, button in enumerate(self.buttons):
                 if button["rect"].collidepoint(mouse_position):
                     self.selected_button_index = index
                     break
-
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 mouse_position = event.pos
@@ -159,7 +139,6 @@ class MainScreen:
             and self.hover_sound
         ):
             self.hover_sound.play()
-
         return None
 
     def _select_next_button(self) -> None:
@@ -185,7 +164,6 @@ class MainScreen:
         """Return whether the intro animation has finished playing."""
         return self.animation_finished
 
-    # Animation (Optimized: Lazy Loading)
     def _load_single_frame(
             self, frame_number: int
     ) -> pygame.Surface | None:
@@ -202,9 +180,7 @@ class MainScreen:
                 frame = pygame.transform.scale(
                     frame, (self.WIDTH, self.HEIGHT)
                 )
-
             return frame
-
         except FileNotFoundError:
             print(f"[Warning] Frame '{filename}' not found.")
             return None
@@ -216,15 +192,12 @@ class MainScreen:
         """Advance the intro animation to the frame for the current time."""
         if self.animation_finished:
             return
-
         elapsed_time = pygame.time.get_ticks() - self.animation_start_time
         frame_duration = 1000 / self.ANIMATION_FPS
         target_frame_index = int(elapsed_time / frame_duration) + 1
-
         if target_frame_index >= self.TOTAL_FRAMES:
             if self.final_frame is None:
                 self.final_frame = self._load_single_frame(self.TOTAL_FRAMES)
-
             self.current_frame_surface = None
             self.animation_finished = True
             return
@@ -236,17 +209,14 @@ class MainScreen:
             if new_frame:
                 self.current_frame_surface = new_frame
 
-    # Drawing
     def draw(self) -> None:
         """Draw the current animation frame or the finished menu buttons."""
         self._update_animation()
-
         if self.animation_finished:
             if self.final_frame is not None:
                 self.screen.blit(self.final_frame, (0, 0))
             else:
                 self.screen.fill((0, 0, 0))
-
             self._draw_buttons()
         else:
             if self.current_frame_surface is not None:
@@ -258,7 +228,6 @@ class MainScreen:
         """Draw each octagon-shaped button with its hover/select state."""
         mouse_position = pygame.mouse.get_pos()
         cut = 12
-
         for index, button in enumerate(self.buttons):
             rect: pygame.Rect = button["rect"]
             is_hovered = rect.collidepoint(mouse_position)
@@ -283,7 +252,6 @@ class MainScreen:
                 (rect.left, rect.bottom - cut),
                 (rect.left, rect.top + cut),
             ]
-
             pygame.draw.polygon(self.screen, button_color, points)
             pygame.draw.polygon(
                 self.screen, border_color, points, width=2

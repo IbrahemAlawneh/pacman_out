@@ -127,11 +127,9 @@ class SettingScreen:
                 self.is_dragging_sfx = True
             self._handle_number_clicks(pos)
             self._handle_cheat_clicks(pos)
-
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.is_dragging_music = False
             self.is_dragging_sfx = False
-
         elif event.type == pygame.MOUSEMOTION:
             if self.is_dragging_music:
                 self._update_slider("music", event.pos[0])
@@ -184,7 +182,6 @@ class SettingScreen:
         """Handles toggling the Cheat buttons
         based on the Master Switch logic"""
         cheats = self.config["cheats"]
-
         for key, rect in self.cheat_toggles.items():
             if rect.collidepoint(pos):
                 if key == "enable_all":
@@ -202,7 +199,6 @@ class SettingScreen:
             self.screen.blit(self.bg_image, (0, 0))
         else:
             self.screen.fill((15, 10, 30))
-
         panel_rect = pygame.Rect(60, 60, 480, 700)
         pygame.draw.rect(
             self.screen, self.COLOR_PANEL, panel_rect, border_radius=20
@@ -237,7 +233,6 @@ class SettingScreen:
             )
             self.screen.blit(scaled_speaker, (130, 235))
             self.screen.blit(scaled_speaker, (130, 335))
-
         pygame.draw.rect(
             self.screen, self.COLOR_SLIDER_BG,
             self.slider_music_rect, border_radius=5

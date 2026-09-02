@@ -129,7 +129,6 @@ class GameScreen:
         self._process_input(pac, keys)
         step = self._calculate_speed(pac)
         self._update_pacman_position(pac, step)
-
         if self.scared_timer_start > 0:
             if (
                 pygame.time.get_ticks() - self.scared_timer_start >
@@ -353,7 +352,6 @@ class GameScreen:
             elif pac.direction == "RIGHT" and pac.x >= perfect_x:
                 pac.x = perfect_x
                 can_move = False
-
         if can_move and pac.direction != "NONE":
             if pac.direction == "UP":
                 pac.y -= step
@@ -391,7 +389,6 @@ class GameScreen:
             cell = self.entities.level.grid[grid_y][grid_x]
         except IndexError:
             return False
-
         if direction == "UP":
             return (cell & 1) == 0
         elif direction == "RIGHT":
@@ -419,7 +416,6 @@ class GameScreen:
             self.entities.level.level_id - 1
         ) % len(GAME_THEMES)
         current_theme = GAME_THEMES[theme_index]
-
         self.theme_name = current_theme.name
         self.bk_image: pygame.Surface | None = self._load_image(
             current_theme.bg_path, True
@@ -451,9 +447,7 @@ class GameScreen:
         MAX_W, MAX_H = 860, 600
         cell_w = MAX_W // grid_width
         cell_h = MAX_H // grid_height
-
         self.cell_size = min(cell_w, cell_h, 60)
-
         maze_width_px = grid_width * self.cell_size
         maze_height_px = grid_height * self.cell_size
 
@@ -472,14 +466,12 @@ class GameScreen:
             center_grid_y -= 1
 
         self.entities.pacman.center = center_grid_x, center_grid_y
-
         pac = self.entities.pacman
         pac.x = center_grid_x * self.cell_size
         pac.y = center_grid_y * self.cell_size
 
         pac.direction = "NONE"
         pac.next_direction = "NONE"
-
         for ghost in self.entities.ghosts:
             sx, sy = ghost.spawn_x, ghost.spawn_y
             while (
