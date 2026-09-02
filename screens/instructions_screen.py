@@ -15,9 +15,13 @@ class InstructionsScreen:
         self._init_assets()
         self.bg: pygame.Surface | None = None
 
-        p_pacgum = self.config.get("points_pes_pacgum", 20)
-        p_super = self.config.get("points_per_super_pacgum", 40)
-        p_ghost = self.config.get("points_per_ghost", 200)
+        p_pacgum = self._get_valid_points("points_pes_pacgum", 20, 10, 100)
+
+        p_super = self._get_valid_points(
+            "points_per_super_pacgum", 40, 20, 200
+        )
+
+        p_ghost = self._get_valid_points("points_per_ghost", 200, 50, 500)
 
         self.instructions = [
             ("GAME RULES", self.HEADER_COLOR, None),
@@ -43,6 +47,43 @@ class InstructionsScreen:
             ("Move Pac-Man faster", self.TEXT_COLOR, "F4"),
             ("Protect Pac-Man from Ghosts", self.TEXT_COLOR, "F5"),
         ]
+
+    def _get_valid_points(
+            self, key: str, default_val: int, min_val: int, max_val: int
+    ) -> int:
+        """
+        Safely extracts, validates, and clamps point values.
+        Handles floats, invalid strings, booleans, and out-of-bound ranges.
+        """
+        raw_value = self.config.get(key, default_val)
+        try:
+            if isinstance(raw_value, bool):
+                raise ValueError
+
+            if isinstance(raw_value, float):
+                print(
+                    f"[Warning] {key} is a float ({raw_value}). "
+                    f"Truncating to integer: {int(raw_value)}."
+                )
+
+            parsed_val = int(raw_value)
+
+            if parsed_val < min_val or parsed_val > max_val:
+                clamped = max(min_val, min(parsed_val, max_val))
+                print(
+                    f"[Warning] {key} is out of bounds ({parsed_val}). "
+                    f"Clamping to {clamped}."
+                )
+                return clamped
+
+            return parsed_val
+
+        except (ValueError, TypeError):
+            print(
+                f"[Warning] Invalid type for {key}: '{raw_value}'. "
+                f"Using default: {default_val}."
+            )
+            return default_val
 
     def _init_assets(self) -> None:
         """Load the optional background, fonts, and interface colors."""
